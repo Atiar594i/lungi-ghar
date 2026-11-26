@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Staff &amp; Roles - Admin Console</title>
+  <link rel="stylesheet" href="/admin/admin.css">
+  <style>
+    .table-card table {
+      min-width: 820px;
+    }
+    .perm-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 4px;
+      background: #f1f5f9;
+      color: #334155;
+      margin: 1px 2px;
+      border: 1px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    .perm-badge.all {
+      background: #eef5f2;
+      color: #0f4c3a;
+      border-color: #c7ded4;
+    }
+    .perm-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      background: #faf9f7;
+      border: 1px solid var(--border);
+      padding: 14px;
+      border-radius: 8px;
+      margin-top: 6px;
+    }
+    .perm-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12.5px;
+      color: var(--dark);
+      cursor: pointer;
+    }
+    .perm-item input[type="checkbox"] {
+      margin-top: 3px;
+      cursor: pointer;
+    }
+    .perm-title {
+      font-weight: 600;
+      color: var(--dark);
+      display: block;
+    }
+    .perm-desc {
+      font-size: 11px;
+      color: var(--text-light);
+      display: block;
+      line-height: 1.3;
+    }
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+    .role-super { background: #fdf2f8; color: #9d174d; border: 1px solid #fbcfe8; }
+    .role-manager { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+    .role-editor { background: #faf3e8; color: #92400e; border: 1px solid #fed7aa; }
+    .role-operator { background: #f5f3ff; color: #5b21b6; border: 1px solid #ddd6fe; }
+    .role-custom { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar"></aside>
+
+  <div class="main-content">
+    <div class="admin-topbar">
+      <div class="topbar-title" id="pageTitle">অ্যাডমিন ও রোল ব্যবস্থাপনা</div>
+      <div class="topbar-actions">
+        <button type="button" class="btn btn-primary btn-sm" onclick="openAddModal()" id="btnAddAdminTop">
+          <span id="iconAddBtn"></span>
+          <span id="lblAddAdminTop">নতুন অ্যাডমিন</span>
+        </button>
+        <div class="admin-avatar">A</div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- Summary Stats -->
+      <div class="stats-grid cols-4">
+        <div class="stat-card">
+          <div class="stat-icon green" id="iconStatTotal"></div>
+          <div class="stat-info">
+            <div class="num" id="statTotalAdmins">0</div>
+            <div class="label" id="lblStatTotal">মোট অ্যাডমিন</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon pink" id="iconStatSuper"></div>
+          <div class="stat-info">
+            <div class="num" id="statSuperAdmins">0</div>
+            <div class="label" id="lblStatSuper">সুপার অ্যাডমিন</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue" id="iconStatStaff"></div>
+          <div class="stat-info">
+            <div class="num" id="statStaffAdmins">0</div>
+            <div class="label" id="lblStatStaff">অ্যাসিস্ট্যান্ট / স্টাফ</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon gold" id="iconStatActive"></div>
+          <div class="stat-info">
+            <div class="num" id="statActiveAdmins">0</div>
+            <div class="label" id="lblStatActive">সক্রিয় অ্যাকাউন্ট</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Alert -->
+      <div class="alert alert-info" style="display:flex; align-items:center; gap:10px;">
+        <span id="alertIcon"></span>
+        <span id="alertText">প্রতিটি অ্যাডমিন অ্যাকাউন্টের জন্য সুনির্দিষ্ট রোল ও অ্যাক্সেস নির্ধারণ করুন। সুপার অ্যাডমিন ছাড়া কেউ অননুমোদিত সেকশনে প্রবেশ করতে পারবে না।</span>
+      </div>
+
+      <!-- Admin Table Card -->
+      <div class="table-card">
+        <div class="table-card-header">
+          <div class="table-card-title" id="tblHeaderTitle">অ্যাডমিন ও স্টাফ তালিকা</div>
+          <div class="filter-bar">
+            <div class="search-box">
+              <span id="searchIcon"></span>
+              <input type="text" id="adminSearchInput" placeholder="নাম বা ইউজারনেম খুঁজুন..." oninput="filterAdmins()">
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" onclick="openAddModal()" id="btnAddAdminTbl">
+              <span id="iconAddBtn2"></span>
+              <span id="lblAddAdminTbl">নতুন অ্যাডমিন</span>
+            </button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th id="thAdminName">অ্যাডমিন / ইউজারনেম</th>
+                <th id="thRole">রোল</th>
+                <th id="thPermissions">অনুমোদিত পারমিশন</th>
+                <th id="thStatus">স্ট্যাটাস</th>
+                <th id="thLastLogin">সর্বশেষ লগইন</th>
+                <th id="thActions" style="text-align:right;">অ্যাকশন</th>
+              </tr>
+            </thead>
+            <tbody id="adminsTableBody">
+              <tr>
+                <td colspan="7" class="empty-state">লোড হচ্ছে...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add / Edit Admin -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">নতুন অ্যাডমিন যোগ করুন</div>
+      <button type="button" class="modal-close" onclick="closeModal()">
+        <span id="modalCloseIcon"></span>
+      </button>
+    </div>
+    <form id="adminForm" onsubmit="saveAdmin(event)">
+      <input type="hidden" id="editAdminId">
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" id="lblFormName">পূর্ণ নাম *</label>
+            <input type="text" class="form-control" id="formName" required placeholder="যেমন: মো. কামরুল হাসান">
+          </div>
+          <div class="form-group">
+            <label class="form-label" id="lblFormUsername">লগইন ইউজারনেম *</label>
+            <input type="text" class="form-control" id="formUsername" required placeholder="যেমন: kamrul_editor" autocomplete="off">
+            <small style="color:var(--text-light); font-size:11px;" id="lblUsernameHint">ছোট হাতের ইংরেজি অক্ষর, সংখ্যা ও (_) ব্যবহার করুন</small>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" id="lblFormPassword">পাসওয়ার্ড *</label>
+            <input type="password" class="form-control" id="formPassword" placeholder="কমপক্ষে ৬ অক্ষর" autocomplete="new-password">
+            <small style="color:var(--text-light); font-size:11px;" id="lblPasswordHint">এডিট করার সময় পাসওয়ার্ড পরিবর্তন না করতে চাইলে খালি রাখুন</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label" id="lblFormRole">রোল প্রিসেট *</label>
+            <select class="form-control" id="formRole" onchange="onRoleChange()">
+              <option value="super_admin" id="optRoleSuper">সুপার অ্যাডমিন (সব কিছুর পূর্ণ অ্যাক্সেস)</option>
+              <option value="manager" id="optRoleManager">স্টোর ম্যানেজার (পণ্য, অর্ডার, কাস্টমার, কুপন ও স্টোর)</option>
+              <option value="product_editor" id="optRoleEditor">প্রোডাক্ট এডিটর (শুধু পণ্য ও ক্যাটাগরি)</option>
+              <option value="order_operator" id="optRoleOperator">অর্ডার অপারেটর (শুধু অর্ডার ও ট্র্যাকিং)</option>
+              <option value="custom" id="optRoleCustom">কাস্টম রোল (নিজে পারমিশন বাছাই করুন)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:8px;">
+          <label class="form-label" id="lblPermSection">কার্যপরিধি ও পারমিশন কন্ট্রোল</label>
+          <div class="perm-grid" id="permCheckboxes">
+            <label class="perm-item">
+              <input type="checkbox" name="perm" value="products" id="perm_products">
+              <div>
+                <span class="perm-title" id="lblPermProducts">পণ্য ব্যবস্থাপনা (Products)</span>
+                <span class="perm-desc" id="descPermProducts">পণ্য যোগ, ছবি আপলোড, দাম ও স্টক পরিবর্তন</span>
+              </div>
+            </label>
+
+            <label class="perm-item">
+              <input type="checkbox" name="perm" value="categories" id="perm_categories">
+              <div>
+                <span class="perm-title" id="lblPermCategories">ক্যাটাগরি (Categories)</span>
+                <span class="perm-desc" id="descPermCategories">নতুন ক্যাটাগরি তৈরি, নাম ও ছবি পরিবর্তন</span>
+              </div>
+            </label>
+
+            <label class="perm-item">
+              <input type="checkbox" name="perm" value="orders" id="perm_orders">
+              <div>
+                <span class="perm-title" id="lblPermOrders">অর্ডার ব্যবস্থাপনা (Orders)</span>
+                <span class="perm-desc" id="descPermOrders">অর্ডার দেখা, স্ট্যাটাস পরিবর্তন ও CSV এক্সপোর্ট</span>
+              </div>
+            </label>
+
+            <label class="perm-item">
+              <input type="checkbox" name="perm" value="customers" id="perm_customers">
+              <div>
+                <span class="perm-title" id="lblPermCustomers">ইউজার ও ক্রেতা (Customers)</span>
+                <span class="perm-desc" id="descPermCustomers">নিবন্ধিত ইউজার দেখা, অ্যাক্টিভ/সাসপেন্ড করা</span>
+              </div>
+            </label>
+
+            <label class="perm-item">
+              <input type="checkbox" name="perm" value="coupons" id="perm_coupons">
+              <div>
+                <span class="perm-title" id="lblPermCoupons">ডিসকাউন্ট কুপন (Coupons)</span>
+                <span class="perm-desc" id="descPermCoupons">প্রোমো কোড তৈরি, ছাড়ের হার ও মেয়াদ নির্ধারণ</span>
+              </div>
+            </label>
+
+            <label class="perm-item">
+              <input type="checkbox" name="perm" value="settings" id="perm_settings">
+              <div>
+                <span class="perm-title" id="lblPermSettings">স্টোর ও সোশ্যাল সেটিংস (Settings)</span>
+                <span class="perm-desc" id="descPermSettings">দোকানের নাম, ডেলিভারি চার্জ, নোটিশ ও সোশ্যাল লিংক</span>
+              </div>
+            </label>
+
+            <label class="perm-item">
+              <input type="checkbox" name="perm" value="payment_gateway" id="perm_payment_gateway">
+              <div>
+                <span class="perm-title" id="lblPermGateways">বিকাশ ও গেটওয়ে (Gateways)</span>
+                <span class="perm-desc" id="descPermGateways">বিকাশ ক্রেডেনশিয়াল, ফায়ারবেস ও জিমেইল সেটিংস</span>
+              </div>
+            </label>
+
+            <label class="perm-item">
+              <input type="checkbox" name="perm" value="admins" id="perm_admins">
+              <div>
+                <span class="perm-title" id="lblPermAdmins">অ্যাডমিন টিম ও রোল (Admins)</span>
+                <span class="perm-desc" id="descPermAdmins">নতুন সাব-অ্যাডমিন তৈরি ও পারমিশন কন্ট্রোল</span>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal()" id="btnCancel">বাতিল</button>
+        <button type="submit" class="btn btn-primary" id="btnSubmitAdmin">সংরক্ষণ করুন</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/js/i18n.js"></script>
+<script src="/js/icons.js"></script>
+<script src="/admin/admin.js"></script>
+<script>
+let cachedAdmins = [];
+let loggedAdmin = null;
+
+const PERM_PRESETS = {
+  super_admin: ['all'],
+  manager: ['products', 'categories', 'orders', 'customers', 'coupons', 'settings'],
+  product_editor: ['products', 'categories'],
+  order_operator: ['orders'],
+  custom: []
+};
+
+const PERM_LABELS = {
+  all: { bn: 'সকল অ্যাক্সেস (Super)', en: 'Full Access (Super)' },
+  products: { bn: 'পণ্য', en: 'Products' },
+  categories: { bn: 'ক্যাটাগরি', en: 'Categories' },
+  orders: { bn: 'অর্ডার', en: 'Orders' },
+  customers: { bn: 'ইউজার ও ক্রেতা', en: 'Customers' },
+  coupons: { bn: 'কুপন', en: 'Coupons' },
+  settings: { bn: 'সেটিংস ও সোশ্যাল', en: 'Store Settings' },
+  payment_gateway: { bn: 'বিকাশ ও গেটওয়ে', en: 'Payment Gateway' },
+  admins: { bn: 'অ্যাডমিন রোল', en: 'Admin Staff' }
+};
+
+const ROLE_INFO = {
+  super_admin: { bn: 'সুপার অ্যাডমিন', en: 'Super Admin', cls: 'role-super' },
+  manager: { bn: 'স্টোর ম্যানেজার', en: 'Store Manager', cls: 'role-manager' },
+  product_editor: { bn: 'প্রোডাক্ট এডিটর', en: 'Product Editor', cls: 'role-editor' },
+  order_operator: { bn: 'অর্ডার অপারেটর', en: 'Order Operator', cls: 'role-operator' },
+  custom: { bn: 'কাস্টম রোল', en: 'Custom Role', cls: 'role-custom' }
+};
+
+function syncPageLabels() {
+  const en = getLang() === 'en';
+  document.getElementById('pageTitle').textContent = en ? 'Admin Staff & Role Permissions' : 'অ্যাডমিন ও রোল ব্যবস্থাপনা';
+  document.getElementById('lblAddAdminTop').textContent = en ? 'New Admin' : 'নতুন অ্যাডমিন';
+  document.getElementById('lblAddAdminTbl').textContent = en ? 'Add Admin' : 'নতুন অ্যাডমিন';
+  document.getElementById('lblStatTotal').textContent = en ? 'Total Admins' : 'মোট অ্যাডমিন';
+  document.getElementById('lblStatSuper').textContent = en ? 'Super Admins' : 'সুপার অ্যাডমিন';
+  document.getElementById('lblStatStaff').textContent = en ? 'Sub-Admins / Staff' : 'অ্যাসিস্ট্যান্ট / স্টাফ';
+  document.getElementById('lblStatActive').textContent = en ? 'Active Accounts' : 'সক্রিয় অ্যাকাউন্ট';
+  document.getElementById('alertText').textContent = en
+    ? 'Assign granular access roles and permissions to your team. Sub-admins cannot view or modify sections outside their assigned permissions.'
+    : 'প্রতিটি অ্যাডমিন অ্যাকাউন্টের জন্য সুনির্দিষ্ট রোল ও অ্যাক্সেস নির্ধারণ করুন। সুপার অ্যাডমিন ছাড়া কেউ অননুমোদিত সেকশনে প্রবেশ করতে পারবে না।';
+  document.getElementById('tblHeaderTitle').textContent = en ? 'Admin Staff Roster' : 'অ্যাডমিন ও স্টাফ তালিকা';
+  document.getElementById('adminSearchInput').placeholder = en ? 'Search by name or username...' : 'নাম বা ইউজারনেম খুঁজুন...';
+
+  document.getElementById('thAdminName').textContent = en ? 'Admin / Username' : 'অ্যাডমিন / ইউজারনেম';
+  document.getElementById('thRole').textContent = en ? 'Role' : 'রোল';
+  document.getElementById('thPermissions').textContent = en ? 'Assigned Permissions' : 'অনুমোদিত পারমিশন';
+  document.getElementById('thStatus').textContent = en ? 'Status' : 'স্ট্যাটাস';
+  document.getElementById('thLastLogin').textContent = en ? 'Last Login' : 'সর্বশেষ লগইন';
+  document.getElementById('thActions').textContent = en ? 'Actions' : 'অ্যাকশন';
+
+  document.getElementById('lblFormName').textContent = en ? 'Full Name *' : 'পূর্ণ নাম *';
+  document.getElementById('lblFormUsername').textContent = en ? 'Login Username *' : 'লগইন ইউজারনেম *';
+  document.getElementById('lblUsernameHint').textContent = en ? 'Use lowercase letters, numbers, and underscore (_)' : 'ছোট হাতের ইংরেজি অক্ষর, সংখ্যা ও (_) ব্যবহার করুন';
+  document.getElementById('lblFormPassword').textContent = en ? 'Password *' : 'পাসওয়ার্ড *';
+  document.getElementById('lblPasswordHint').textContent = en ? 'Leave blank while editing to keep current password' : 'এডিট করার সময় পাসওয়ার্ড পরিবর্তন না করতে চাইলে খালি রাখুন';
+  document.getElementById('lblFormRole').textContent = en ? 'Role Preset *' : 'রোল প্রিসেট *';
+
+  document.getElementById('optRoleSuper').textContent = en ? 'Super Admin (Full Access to Everything)' : 'সুপার অ্যাডমিন (সব কিছুর পূর্ণ অ্যাক্সেস)';
+  document.getElementById('optRoleManager').textContent = en ? 'Store Manager (Products, Orders, Customers, Settings)' : 'স্টোর ম্যানেজার (পণ্য, অর্ডার, কাস্টমার, কুপন ও স্টোর)';
+  document.getElementById('optRoleEditor').textContent = en ? 'Product Editor (Products & Categories only)' : 'প্রোডাক্ট এডিটর (শুধু পণ্য ও ক্যাটাগরি)';
+  document.getElementById('optRoleOperator').textContent = en ? 'Order Operator (Orders & Tracking only)' : 'অর্ডার অপারেটর (শুধু অর্ডার ও ট্র্যাকিং)';
+  document.getElementById('optRoleCustom').textContent = en ? 'Custom Role (Pick granular permissions)' : 'কাস্টম রোল (নিজে পারমিশন বাছাই করুন)';
+
+  document.getElementById('lblPermSection').textContent = en ? 'Scope & Permission Checklist' : 'কার্যপরিধি ও পারমিশন কন্ট্রোল';
+  document.getElementById('lblPermProducts').textContent = en ? 'Products Management' : 'পণ্য ব্যবস্থাপনা (Products)';
+  document.getElementById('descPermProducts').textContent = en ? 'Add, edit products, update images, price & stock' : 'পণ্য যোগ, ছবি আপলোড, দাম ও স্টক পরিবর্তন';
+  document.getElementById('lblPermCategories').textContent = en ? 'Categories' : 'ক্যাটাগরি (Categories)';
+  document.getElementById('descPermCategories').textContent = en ? 'Add categories, edit name, slug & banner' : 'নতুন ক্যাটাগরি তৈরি, নাম ও ছবি পরিবর্তন';
+  document.getElementById('lblPermOrders').textContent = en ? 'Orders & Fulfillment' : 'অর্ডার ব্যবস্থাপনা (Orders)';
+  document.getElementById('descPermOrders').textContent = en ? 'View orders, change status & export CSV' : 'অর্ডার দেখা, স্ট্যাটাস পরিবর্তন ও CSV এক্সপোর্ট';
+  document.getElementById('lblPermCustomers').textContent = en ? 'Users & Customers' : 'ইউজার ও ক্রেতা (Customers)';
+  document.getElementById('descPermCustomers').textContent = en ? 'View registered users, active/suspend status' : 'নিবন্ধিত ইউজার দেখা, অ্যাক্টিভ/সাসপেন্ড করা';
+  document.getElementById('lblPermCoupons').textContent = en ? 'Discount Coupons' : 'ডিসকাউন্ট কুপন (Coupons)';
+  document.getElementById('descPermCoupons').textContent = en ? 'Create & manage promotional discount codes' : 'প্রোমো কোড তৈরি, ছাড়ের হার ও মেয়াদ নির্ধারণ';
+  document.getElementById('lblPermSettings').textContent = en ? 'Store Info & Social Links' : 'স্টোর ও সোশ্যাল সেটিংস (Settings)';
+  document.getElementById('descPermSettings').textContent = en ? 'Shop details, shipping fees, notices & social links' : 'দোকানের নাম, ডেলিভারি চার্জ, নোটিশ ও সোশ্যাল লিংক';
+  document.getElementById('lblPermGateways').textContent = en ? 'Payment Gateway & Integrations' : 'বিকাশ ও গেটওয়ে (Gateways)';
+  document.getElementById('descPermGateways').textContent = en ? 'bKash credentials, Firebase DB & Gmail settings' : 'বিকাশ ক্রেডেনশিয়াল, ফায়ারবেস ও জিমেইল সেটিংস';
+  document.getElementById('lblPermAdmins').textContent = en ? 'Admin Staff Management' : 'অ্যাডমিন টিম ও রোল (Admins)';
+  document.getElementById('descPermAdmins').textContent = en ? 'Add sub-admins and configure RBAC access' : 'নতুন সাব-অ্যাডমিন তৈরি ও পারমিশন কন্ট্রোল';
+
+  document.getElementById('btnCancel').textContent = en ? 'Cancel' : 'বাতিল';
+  document.getElementById('btnSubmitAdmin').textContent = en ? 'Save Admin' : 'সংরক্ষণ করুন';
+
+  renderIcons();
+}
+
+function renderIcons() {
+  if (typeof svgIcon !== 'function') return;
+  document.getElementById('iconAddBtn').innerHTML = svgIcon('plus', 16);
+  document.getElementById('iconAddBtn2').innerHTML = svgIcon('plus', 16);
+  document.getElementById('iconStatTotal').innerHTML = svgIcon('users', 20);
+  document.getElementById('iconStatSuper').innerHTML = svgIcon('shield', 20);
+  document.getElementById('iconStatStaff').innerHTML = svgIcon('userCheck', 20);
+  document.getElementById('iconStatActive').innerHTML = svgIcon('checkCircle', 20);
+  document.getElementById('alertIcon').innerHTML = svgIcon('shield', 18);
+  document.getElementById('searchIcon').innerHTML = svgIcon('search', 16);
+  document.getElementById('modalCloseIcon').innerHTML = svgIcon('x', 16);
+}
+
+async function loadAdmins() {
+  try {
+    const res = await fetch('/admin/api/admins').then(r => r.json());
+    if (res.success) {
+      cachedAdmins = res.admins || [];
+      updateSummaryStats();
+      renderAdminsTable();
+    } else {
+      showToast(res.message || 'অ্যাডমিন তালিকা লোড করা যায়নি', 'error');
+    }
+  } catch (err) {
+    showToast('সার্ভারে সমস্যা হয়েছে', 'error');
+  }
+}
+
+function updateSummaryStats() {
+  const total = cachedAdmins.length;
+  const supers = cachedAdmins.filter(a => a.role === 'super_admin' || (a.permissions || []).includes('all')).length;
+  const staff = total - supers;
+  const active = cachedAdmins.filter(a => a.status === 'active').length;
+
+  document.getElementById('statTotalAdmins').textContent = total;
+  document.getElementById('statSuperAdmins').textContent = supers;
+  document.getElementById('statStaffAdmins').textContent = staff;
+  document.getElementById('statActiveAdmins').textContent = active;
+}
+
+function filterAdmins() {
+  const query = String(document.getElementById('adminSearchInput').value || '').trim().toLowerCase();
+  renderAdminsTable(query);
+}
+
+function renderAdminsTable(filter = '') {
+  const en = getLang() === 'en';
+  const tbody = document.getElementById('adminsTableBody');
+  const items = cachedAdmins.filter(a => {
+    if (!filter) return true;
+    return (a.name || '').toLowerCase().includes(filter) || (a.username || '').toLowerCase().includes(filter);
+  });
+
+  if (!items.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">${en ? 'No admins found' : 'কোনো অ্যাডমিন পাওয়া যায়নি'}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = items.map((a, index) => {
+    const isMe = loggedAdmin && loggedAdmin.id === a.id;
+    const isPrimary = a.is_primary;
+    const roleMeta = ROLE_INFO[a.role] || ROLE_INFO.custom;
+    const perms = Array.isArray(a.permissions) ? a.permissions : [];
+
+    const permBadges = (a.role === 'super_admin' || perms.includes('all'))
+      ? `<span class="perm-badge all">${en ? 'All Permissions' : 'সকল পারমিশন'}</span>`
+      : perms.length > 0
+        ? perms.map(p => `<span class="perm-badge">${(PERM_LABELS[p] && PERM_LABELS[p][en ? 'en' : 'bn']) || p}</span>`).join('')
+        : `<span style="color:var(--text-light);font-size:11.5px;">${en ? 'None' : 'কোনোটি নয়'}</span>`;
+
+    const statusBadge = a.status === 'active'
+      ? `<span class="status-badge badge-active">${en ? 'Active' : 'সক্রিয়'}</span>`
+      : `<span class="status-badge badge-failed">${en ? 'Suspended' : 'স্থগিত'}</span>`;
+
+    let actions = `<div style="display:flex; justify-content:flex-end; gap:6px;">`;
+    // Edit button
+    actions += `<button type="button" class="btn btn-outline btn-xs" onclick="openEditModal(${a.id})" title="${en ? 'Edit Admin' : 'এডিট করুন'}">
+      ${svgIcon('edit', 13)} <span>${en ? 'Edit' : 'এডিট'}</span>
+    </button>`;
+
+    // Suspend / Activate toggle (cannot suspend primary or self)
+    if (!isPrimary && !isMe) {
+      if (a.status === 'active') {
+        actions += `<button type="button" class="btn btn-warning btn-xs" onclick="toggleAdminStatus(${a.id}, 'suspended')" title="${en ? 'Suspend Admin' : 'স্থগিত করুন'}">
+          ${en ? 'Suspend' : 'স্থগিত'}
+        </button>`;
+      } else {
+        actions += `<button type="button" class="btn btn-primary btn-xs" onclick="toggleAdminStatus(${a.id}, 'active')" title="${en ? 'Activate Admin' : 'সক্রিয় করুন'}">
+          ${en ? 'Activate' : 'সক্রিয়'}
+        </button>`;
+      }
+
+      // Delete button
+      actions += `<button type="button" class="btn btn-danger btn-xs" onclick="deleteAdmin(${a.id}, '${escapeHtml(a.username)}')" title="${en ? 'Delete' : 'ডিলিট'}">
+        ${svgIcon('trash', 13)}
+      </button>`;
+    }
+
+    actions += `</div>`;
+
+    return `
+      <tr>
+        <td>${index + 1}</td>
+        <td>
+          <div style="font-weight:600; display:flex; align-items:center; gap:6px;">
+            ${escapeHtml(a.name || a.username)}
+            ${isPrimary ? `<span style="font-size:10px; background:#faf3e8; color:#92400e; padding:1px 6px; border-radius:4px; font-weight:700;">Owner</span>` : ''}
+            ${isMe ? `<span style="font-size:10px; background:#eef5f2; color:#0f4c3a; padding:1px 6px; border-radius:4px; font-weight:700;">${en ? 'You' : 'আপনি'}</span>` : ''}
+          </div>
+          <div style="font-size:12px; color:var(--text-light); font-family:monospace;">@${escapeHtml(a.username)}</div>
+        </td>
+        <td>
+          <span class="role-badge ${roleMeta.cls}">
+            ${roleMeta[en ? 'en' : 'bn']}
+          </span>
+        </td>
+        <td>${permBadges}</td>
+        <td>${statusBadge}</td>
+        <td style="font-size:12px; color:var(--text-light);">${formatDate(a.last_login)}</td>
+        <td style="text-align:right;">${actions}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function onRoleChange() {
+  const role = document.getElementById('formRole').value;
+  const checkboxes = document.querySelectorAll('#permCheckboxes input[type="checkbox"]');
+
+  if (role === 'super_admin') {
+    checkboxes.forEach(cb => {
+      cb.checked = true;
+      cb.disabled = true;
+    });
+  } else {
+    checkboxes.forEach(cb => {
+      cb.disabled = false;
+      const preset = PERM_PRESETS[role] || [];
+      cb.checked = preset.includes(cb.value);
+    });
+  }
+}
+
+// When a single checkbox is changed manually while not in custom, change dropdown to custom
+document.addEventListener('change', (e) => {
+  if (e.target.matches('#permCheckboxes input[type="checkbox"]')) {
+    const roleSelect = document.getElementById('formRole');
+    if (roleSelect.value !== 'custom' && roleSelect.value !== 'super_admin') {
+      roleSelect.value = 'custom';
+    }
+  }
+});
+
+function openAddModal() {
+  const en = getLang() === 'en';
+  document.getElementById('editAdminId').value = '';
+  document.getElementById('modalTitle').textContent = en ? 'Add New Admin Staff' : 'নতুন অ্যাডমিন যোগ করুন';
+  document.getElementById('formName').value = '';
+  document.getElementById('formUsername').value = '';
+  document.getElementById('formUsername').disabled = false;
+  document.getElementById('formPassword').value = '';
+  document.getElementById('formPassword').required = true;
+  document.getElementById('formRole').value = 'manager';
+  document.getElementById('formRole').disabled = false;
+  onRoleChange();
+
+  document.getElementById('adminModal').classList.add('open');
+}
+
+function openEditModal(adminId) {
+  const en = getLang() === 'en';
+  const admin = cachedAdmins.find(a => a.id === adminId);
+  if (!admin) return;
+
+  document.getElementById('editAdminId').value = admin.id;
+  document.getElementById('modalTitle').textContent = en ? `Edit Admin: ${admin.username}` : `অ্যাডমিন এডিট: ${admin.username}`;
+  document.getElementById('formName').value = admin.name || '';
+  document.getElementById('formUsername').value = admin.username;
+  document.getElementById('formUsername').disabled = true; // username immutable
+  document.getElementById('formPassword').value = '';
+  document.getElementById('formPassword').required = false;
+
+  const roleSelect = document.getElementById('formRole');
+  roleSelect.value = admin.role || 'custom';
+  roleSelect.disabled = Boolean(admin.is_primary);
+
+  const checkboxes = document.querySelectorAll('#permCheckboxes input[type="checkbox"]');
+  const perms = Array.isArray(admin.permissions) ? admin.permissions : [];
+
+  if (admin.role === 'super_admin' || perms.includes('all')) {
+    checkboxes.forEach(cb => {
+      cb.checked = true;
+      cb.disabled = true;
+    });
+  } else {
+    checkboxes.forEach(cb => {
+      cb.disabled = Boolean(admin.is_primary);
+      cb.checked = perms.includes(cb.value);
+    });
+  }
+
+  document.getElementById('adminModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('adminModal').classList.remove('open');
+}
+
+async function saveAdmin(e) {
+  e.preventDefault();
+  const id = document.getElementById('editAdminId').value;
+  const name = document.getElementById('formName').value.trim();
+  const username = document.getElementById('formUsername').value.trim().toLowerCase();
+  const password = document.getElementById('formPassword').value;
+  const role = document.getElementById('formRole').value;
+
+  const selectedPerms = [];
+  document.querySelectorAll('#permCheckboxes input[type="checkbox"]:checked').forEach(cb => {
+    selectedPerms.push(cb.value);
+  });
+
+  const payload = {
+    name,
+    role,
+    permissions: role === 'super_admin' ? ['all'] : selectedPerms
+  };
+
+  if (!id) {
+    payload.username = username;
+    payload.password = password;
+  } else if (password) {
+    payload.password = password;
+  }
+
+  const url = id ? `/admin/api/admins/${id}` : '/admin/api/admins';
+  const method = id ? 'PUT' : 'POST';
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(r => r.json());
+
+    if (res.success) {
+      showToast(res.message, 'success');
+      closeModal();
+      loadAdmins();
+    } else {
+      showToast(res.message || 'ব্যর্থ হয়েছে', 'error');
+    }
+  } catch (err) {
+    showToast('সার্ভারে যোগাযোগ করা যায়নি', 'error');
+  }
+}
+
+async function toggleAdminStatus(id, nextStatus) {
+  const en = getLang() === 'en';
+  const confirmMsg = nextStatus === 'suspended'
+    ? (en ? 'Are you sure you want to suspend this admin account?' : 'আপনি কি নিশ্চিত যে এই অ্যাকাউন্টটি স্থগিত করতে চান?')
+    : (en ? 'Are you sure you want to activate this admin account?' : 'আপনি কি এই অ্যাকাউন্টটি পুনরায় সক্রিয় করতে চান?');
+
+  if (!confirm(confirmMsg)) return;
+
+  try {
+    const res = await fetch(`/admin/api/admins/${id}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: nextStatus })
+    }).then(r => r.json());
+
+    if (res.success) {
+      showToast(res.message, 'success');
+      loadAdmins();
+    } else {
+      showToast(res.message || 'স্ট্যাটাস আপডেট ব্যর্থ হয়েছে', 'error');
+    }
+  } catch (_) {
+    showToast('সার্ভারে যোগাযোগ করা যায়নি', 'error');
+  }
+}
+
+async function deleteAdmin(id, username) {
+  const en = getLang() === 'en';
+  const confirmMsg = en
+    ? `Permanently delete admin account @${username}? This cannot be undone.`
+    : `আপনি কি নিশ্চিতভাবে @${username} অ্যাডমিন অ্যাকাউন্টটি স্থায়ীভাবে মুছে ফেলতে চান?`;
+
+  if (!confirm(confirmMsg)) return;
+
+  try {
+    const res = await fetch(`/admin/api/admins/${id}`, {
+      method: 'DELETE'
+    }).then(r => r.json());
+
+    if (res.success) {
+      showToast(res.message, 'success');
+      loadAdmins();
+    } else {
+      showToast(res.message || 'ডিলিট করা যায়নি', 'error');
+    }
+  } catch (_) {
+    showToast('সার্ভারে যোগাযোগ করা যায়নি', 'error');
+  }
+}
+
+window.onLanguageChange = function () {
+  syncPageLabels();
+  if (typeof renderAdminSidebar === 'function') renderAdminSidebar('admins');
+  renderAdminsTable(document.getElementById('adminSearchInput').value.trim().toLowerCase());
+};
+
+syncPageLabels();
+checkSession().then(a => {
+  if (a) {
+    loggedAdmin = a;
+    loadAdmins();
+  }
+});
+</script>
+</body>
+</html>

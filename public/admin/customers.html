@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Users &amp; Customers - Admin Console</title>
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar"></aside>
+
+  <div class="main-content">
+    <div class="admin-topbar">
+      <div class="topbar-title" id="pageTitle">ইউজার ও ক্রেতা ব্যবস্থাপনা</div>
+      <div class="topbar-actions">
+        <div class="admin-avatar">A</div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- Summary Stats -->
+      <div class="stats-grid cols-4">
+        <div class="stat-card">
+          <div class="stat-icon green" id="iconSumUsers"></div>
+          <div class="stat-info">
+            <div class="num" id="sumTotalUsers">0</div>
+            <div class="label" id="lblSumUsers">নিবন্ধিত ইউজার</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue" id="iconSumActive"></div>
+          <div class="stat-info">
+            <div class="num" id="sumActiveUsers">0</div>
+            <div class="label" id="lblSumActive">সক্রিয় অ্যাকাউন্ট</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon gold" id="iconSumBuyers"></div>
+          <div class="stat-info">
+            <div class="num" id="sumBuyers">0</div>
+            <div class="label" id="lblSumBuyers">মোট অর্ডারকারী ক্রেতা</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon slate" id="iconSumSubs"></div>
+          <div class="stat-info">
+            <div class="num" id="sumSubs">0</div>
+            <div class="label" id="lblSumSubs">অফার সাবস্ক্রাইবার</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tab-bar">
+        <button type="button" class="tab-btn active" onclick="switchTab('users', this)" id="tabBtnUsers">নিবন্ধিত ইউজার</button>
+        <button type="button" class="tab-btn" onclick="switchTab('customers', this)" id="tabBtnCust">সব ক্রেতা (গেস্টসহ)</button>
+        <button type="button" class="tab-btn" onclick="switchTab('subscribers', this)" id="tabBtnSubs">অফার সাবস্ক্রাইবার</button>
+      </div>
+
+      <!-- Registered Users Panel -->
+      <div id="panel-users" class="table-card">
+        <div class="table-card-header">
+          <div class="table-card-title" id="hdrUsersTable">নিবন্ধিত ইউজার তালিকা</div>
+          <div class="filter-bar">
+            <select class="form-control" id="userStatusFilter" onchange="loadUsers()" style="width:auto;">
+              <option value="all" id="optAll">সব স্ট্যাটাস</option>
+              <option value="active" id="optAct">সক্রিয়</option>
+              <option value="suspended" id="optSus">স্থগিত</option>
+            </select>
+            <div class="search-box">
+              <span id="iconSearchUsr"></span>
+              <input type="text" id="userSearch" placeholder="নাম, মোবাইল বা ইমেইল..." onkeypress="if(event.key==='Enter')loadUsers()">
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" onclick="loadUsers()" id="btnFilterUsr">খুঁজুন</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th id="thU1">নাম ও ইমেইল</th>
+                <th id="thU2">মোবাইল</th>
+                <th id="thU3">জেলা</th>
+                <th id="thU4">অর্ডার</th>
+                <th id="thU5">মোট খরচ</th>
+                <th id="thU6">স্ট্যাটাস</th>
+                <th id="thU7">নিবন্ধন</th>
+                <th id="thU8">অ্যাকশন</th>
+              </tr>
+            </thead>
+            <tbody id="usersTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- All Customers Panel -->
+      <div id="panel-customers" class="table-card" style="display:none;">
+        <div class="table-card-header">
+          <div class="table-card-title" id="hdrCustTable">সব অর্ডারকারী ক্রেতা</div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th id="thC1">নাম</th>
+                <th id="thC2">মোবাইল</th>
+                <th id="thC3">ইমেইল</th>
+                <th id="thC4">জেলা</th>
+                <th id="thC5">মোট অর্ডার</th>
+                <th id="thC6">মোট খরচ</th>
+                <th id="thC7">তারিখ</th>
+              </tr>
+            </thead>
+            <tbody id="customersTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Subscribers Panel -->
+      <div id="panel-subscribers" class="table-card" style="display:none;">
+        <div class="table-card-header">
+          <div class="table-card-title" id="hdrSubsTable">অফার সাবস্ক্রাইবার</div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th id="thS1">মোবাইল নম্বর</th>
+                <th id="thS2">সাবস্ক্রিপশন তারিখ</th>
+              </tr>
+            </thead>
+            <tbody id="subsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- User Detail Modal -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalUserTitle">ইউজার বিবরণ</div>
+      <button type="button" class="modal-close" onclick="closeUserModal()" id="iconCloseUM"></button>
+    </div>
+    <div class="modal-body" id="userModalBody"></div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" onclick="closeUserModal()" id="btnCloseUM">বন্ধ করুন</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<script src="/js/icons.js"></script>
+<script src="/js/i18n.js"></script>
+<script src="/admin/admin.js"></script>
+<script>
+document.getElementById('iconSumUsers').innerHTML = svgIcon('users', 21);
+document.getElementById('iconSumActive').innerHTML = svgIcon('userCheck', 21);
+document.getElementById('iconSumBuyers').innerHTML = svgIcon('bag', 21);
+document.getElementById('iconSumSubs').innerHTML = svgIcon('phone', 21);
+document.getElementById('iconSearchUsr').innerHTML = svgIcon('search', 15);
+document.getElementById('iconCloseUM').innerHTML = svgIcon('x', 16);
+
+let cachedUsers = [];
+let cachedCustomers = [];
+let cachedSubs = [];
+
+function syncLabels() {
+  const en = getLang() === 'en';
+  renderAdminSidebar('customers');
+  document.getElementById('pageTitle').innerHTML = `${svgIcon('users', 19)} ${en ? 'Users & Customer Directory' : 'ইউজার ও ক্রেতা ব্যবস্থাপনা'}`;
+  document.getElementById('lblSumUsers').textContent = en ? 'Registered Users' : 'নিবন্ধিত ইউজার';
+  document.getElementById('lblSumActive').textContent = en ? 'Active Accounts' : 'সক্রিয় অ্যাকাউন্ট';
+  document.getElementById('lblSumBuyers').textContent = en ? 'Total Order Buyers' : 'মোট অর্ডারকারী ক্রেতা';
+  document.getElementById('lblSumSubs').textContent = en ? 'Offer Subscribers' : 'অফার সাবস্ক্রাইবার';
+  document.getElementById('tabBtnUsers').textContent = en ? 'Registered Users' : 'নিবন্ধিত ইউজার';
+  document.getElementById('tabBtnCust').textContent = en ? 'All Buyers (incl. Guests)' : 'সব ক্রেতা (গেস্টসহ)';
+  document.getElementById('tabBtnSubs').textContent = en ? 'Offer Subscribers' : 'অফার সাবস্ক্রাইবার';
+  document.getElementById('hdrUsersTable').textContent = en ? 'Registered User Accounts' : 'নিবন্ধিত ইউজার তালিকা';
+  document.getElementById('hdrCustTable').textContent = en ? 'All Checkout Buyers' : 'সব অর্ডারকারী ক্রেতা';
+  document.getElementById('hdrSubsTable').textContent = en ? 'SMS / Offer Subscribers' : 'অফার সাবস্ক্রাইবার';
+  document.getElementById('optAll').textContent = en ? 'All Status' : 'সব স্ট্যাটাস';
+  document.getElementById('optAct').textContent = en ? 'Active' : 'সক্রিয়';
+  document.getElementById('optSus').textContent = en ? 'Suspended' : 'স্থগিত';
+  document.getElementById('userSearch').placeholder = en ? 'Name, mobile or email...' : 'নাম, মোবাইল বা ইমেইল...';
+  document.getElementById('btnFilterUsr').textContent = en ? 'Search' : 'খুঁজুন';
+  document.getElementById('modalUserTitle').textContent = en ? 'User Profile & Orders' : 'ইউজারের বিবরণ ও অর্ডার';
+  document.getElementById('btnCloseUM').textContent = en ? 'Close' : 'বন্ধ করুন';
+}
+
+function switchTab(tab, btn) {
+  ['users', 'customers', 'subscribers'].forEach(k => {
+    document.getElementById(`panel-${k}`).style.display = k === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+async function loadUsers() {
+  const status = document.getElementById('userStatusFilter').value;
+  const search = document.getElementById('userSearch').value.trim();
+  const data = await fetch(`/admin/api/users?status=${encodeURIComponent(status)}&search=${encodeURIComponent(search)}`).then(r => r.json());
+  if (!data.success) return;
+
+  cachedUsers = data.users || [];
+  if (data.summary) {
+    document.getElementById('sumTotalUsers').textContent = data.summary.totalUsers;
+    document.getElementById('sumActiveUsers').textContent = data.summary.activeUsers;
+    document.getElementById('sumBuyers').textContent = data.summary.totalCustomers;
+    document.getElementById('sumSubs').textContent = data.summary.totalSubscribers;
+  }
+  renderUsersTable();
+}
+
+function renderUsersTable() {
+  const en = getLang() === 'en';
+  const tbody = document.getElementById('usersTable');
+  if (!cachedUsers.length) {
+    tbody.innerHTML = `<tr><td colspan="9" class="empty-state">${en ? 'No registered users found' : 'কোনো নিবন্ধিত ইউজার নেই'}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = cachedUsers.map((u, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td>
+        <div style="font-weight:600;color:var(--dark);">${escapeHtml(u.name)}</div>
+        <div style="font-size:12px;color:var(--text-light);display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px;">
+          <span>${escapeHtml(u.email || '—')}</span>
+          <span class="status-badge ${Number(u.email_verified) === 1 ? 'badge-active' : 'badge-pending'}" style="font-size:10.5px;padding:2px 7px;">${Number(u.email_verified) === 1 ? (en ? 'Gmail Verified' : 'Gmail ভেরিফায়েড') : (en ? 'Pending OTP' : 'ওটিপি বাকি')}</span>
+        </div>
+      </td>
+      <td><a href="tel:${escapeHtml(u.phone)}" style="color:var(--primary);font-weight:600;">${escapeHtml(u.phone)}</a></td>
+      <td>${escapeHtml(u.district || '—')}</td>
+      <td style="font-weight:700;">${u.total_orders || 0}</td>
+      <td style="font-weight:700;color:var(--primary);">${formatPrice(u.total_spent || 0)}</td>
+      <td><span class="status-badge ${u.status === 'active' ? 'badge-active' : 'badge-inactive'}">${u.status === 'active' ? (en ? 'Active' : 'সক্রিয়') : (en ? 'Suspended' : 'স্থগিত')}</span></td>
+      <td style="font-size:12px;color:var(--text-light);">${formatDate(u.created_at)}</td>
+      <td>
+        <div style="display:flex;gap:5px;">
+          <button type="button" class="btn btn-outline btn-xs" onclick="viewUser(${u.id})">${en ? 'Details' : 'বিস্তারিত'}</button>
+          <button type="button" class="btn ${u.status === 'active' ? 'btn-danger' : 'btn-primary'} btn-xs" onclick="toggleUserStatus(${u.id}, '${u.status === 'active' ? 'suspended' : 'active'}')">
+            ${u.status === 'active' ? (en ? 'Suspend' : 'স্থগিত') : (en ? 'Activate' : 'সক্রিয়')}
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function viewUser(id) {
+  const en = getLang() === 'en';
+  document.getElementById('userModal').classList.add('open');
+  document.getElementById('userModalBody').innerHTML = '<p style="text-align:center;padding:30px;">Loading...</p>';
+  const res = await fetch(`/admin/api/users/${id}`).then(r => r.json());
+  if (!res.success) return;
+  const u = res.user;
+  const orders = res.orders || [];
+  const st = getStatusLabels();
+  document.getElementById('userModalBody').innerHTML = `
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; background:var(--bg); padding:16px; border-radius:10px; margin-bottom:20px;">
+      <div><strong>${en ? 'Name' : 'নাম'}:</strong><br>${escapeHtml(u.name)}</div>
+      <div><strong>${en ? 'Mobile' : 'মোবাইল'}:</strong><br>${escapeHtml(u.phone)}</div>
+      <div><strong>${en ? 'Email' : 'ইমেইল'}:</strong><br>${escapeHtml(u.email || '—')} <span class="status-badge ${Number(u.email_verified) === 1 ? 'badge-active' : 'badge-pending'}" style="font-size:10.5px;padding:2px 7px;margin-left:4px;">${Number(u.email_verified) === 1 ? (en ? 'Verified' : 'ভেরিফায়েড') : (en ? 'Pending OTP' : 'ওটিপি বাকি')}</span></div>
+      <div><strong>${en ? 'District' : 'জেলা'}:</strong><br>${escapeHtml(u.district || '—')}</div>
+      <div style="grid-column:1/-1;"><strong>${en ? 'Address' : 'ঠিকানা'}:</strong><br>${escapeHtml(u.address || '—')}</div>
+      <div><strong>${en ? 'Joined' : 'নিবন্ধন'}:</strong><br>${formatDate(u.created_at)}</div>
+      <div><strong>${en ? 'Last Login' : 'সর্বশেষ লগইন'}:</strong><br>${formatDate(u.last_login)}</div>
+    </div>
+    <h4 style="margin-bottom:10px;">${en ? 'Order History' : 'অর্ডারের ইতিহাস'} (${orders.length})</h4>
+    ${orders.length ? orders.map(o => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+        <div>
+          <strong>${escapeHtml(o.order_number)}</strong>
+          <div style="font-size:12px;color:var(--text-light);">${formatDate(o.created_at)}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:700;color:var(--primary);">${formatPrice(o.total)}</div>
+          <span class="status-badge ${statusClasses[o.order_status] || 'badge-pending'}">${st[o.order_status] || o.order_status}</span>
+        </div>
+      </div>
+    `).join('') : `<p style="color:var(--text-light);font-size:13.5px;">${en ? 'No orders placed yet.' : 'এখনও কোনো অর্ডার নেই।'}</p>`}
+  `;
+}
+
+function closeUserModal() {
+  document.getElementById('userModal').classList.remove('open');
+}
+
+async function toggleUserStatus(id, nextStatus) {
+  const res = await fetch(`/admin/api/users/${id}/status`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: nextStatus })
+  }).then(r => r.json());
+  if (res.success) {
+    showToast(res.message, 'success');
+    loadUsers();
+  }
+}
+
+async function loadCustomersAndSubs() {
+  const [custRes, subRes] = await Promise.all([
+    fetch('/admin/api/customers').then(r => r.json()),
+    fetch('/admin/api/subscribers').then(r => r.json())
+  ]);
+  cachedCustomers = custRes.customers || [];
+  cachedSubs = subRes.subscribers || [];
+  renderCustomersTable();
+  renderSubsTable();
+}
+
+function renderCustomersTable() {
+  const en = getLang() === 'en';
+  const tbody = document.getElementById('customersTable');
+  if (!cachedCustomers.length) {
+    tbody.innerHTML = `<tr><td colspan="8" class="empty-state">${en ? 'No buyers yet' : 'কোনো ক্রেতা নেই'}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = cachedCustomers.map((c, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td style="font-weight:600;">${escapeHtml(c.name)}</td>
+      <td><a href="tel:${escapeHtml(c.phone)}" style="color:var(--primary);">${escapeHtml(c.phone)}</a></td>
+      <td style="color:var(--text-light);">${escapeHtml(c.email || '—')}</td>
+      <td>${escapeHtml(c.district || '—')}</td>
+      <td style="font-weight:600;">${c.total_orders || 0}</td>
+      <td style="font-weight:600;color:var(--primary);">${formatPrice(c.total_spent || 0)}</td>
+      <td style="font-size:12px;color:var(--text-light);">${formatDate(c.created_at)}</td>
+    </tr>
+  `).join('');
+}
+
+function renderSubsTable() {
+  const en = getLang() === 'en';
+  const tbody = document.getElementById('subsTable');
+  if (!cachedSubs.length) {
+    tbody.innerHTML = `<tr><td colspan="3" class="empty-state">${en ? 'No subscribers yet' : 'কোনো সাবস্ক্রাইবার নেই'}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = cachedSubs.map((s, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td style="font-weight:600;">${escapeHtml(s.phone)}</td>
+      <td style="font-size:12.5px;color:var(--text-light);">${formatDate(s.created_at)}</td>
+    </tr>
+  `).join('');
+}
+
+window.onLanguageChange = function () {
+  syncLabels();
+  renderUsersTable();
+  renderCustomersTable();
+  renderSubsTable();
+};
+
+syncLabels();
+checkSession().then(a => {
+  if (a) {
+    loadUsers();
+    loadCustomersAndSubs();
+  }
+});
+</script>
+</body>
+</html>

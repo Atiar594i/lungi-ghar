@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Tracking - Lungi Ghar</title>
+  <link id="siteFavicon" rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/firebase-analytics.js"></script>
+</head>
+<body>
+<div class="top-bar">
+  <div class="container">
+    <span class="top-bar-item"><span id="iconPkgTop"></span> <span data-i18n="track_title">অর্ডার ট্র্যাকিং</span></span>
+    <div class="top-bar-right"><div data-lang-switcher></div></div>
+  </div>
+</div>
+
+<header class="header">
+  <div class="container">
+    <div class="header-inner">
+      <a href="/" class="logo">
+        <div class="logo-mark" id="brandLogoMark"></div>
+        <div class="logo-text"><span id="shopName">লুঙ্গি ঘর</span><span data-i18n="track_title">অর্ডার ট্র্যাকিং</span></div>
+      </a>
+      <div class="header-actions" style="margin-left:auto;">
+        <div id="authHeaderSlot"></div>
+        <a href="/" class="btn btn-outline btn-sm" data-i18n="nav_home">হোম</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="section">
+  <div class="container" style="max-width:760px;">
+    <div class="breadcrumb">
+      <a href="/" data-i18n="nav_home">হোম</a>
+      <span class="breadcrumb-sep">/</span>
+      <span data-i18n="track_title">অর্ডার ট্র্যাকিং</span>
+    </div>
+
+    <div style="background:white; border:1px solid var(--border); border-radius:16px; padding:32px; margin-bottom:28px;">
+      <h1 class="section-title" style="margin-bottom:10px;" data-i18n="track_title">অর্ডার ট্র্যাকিং</h1>
+      <p style="color:var(--text-light); margin-bottom:22px; font-size:14.5px;" data-i18n="track_subtitle">আপনার অর্ডার নম্বর দিয়ে বর্তমান অবস্থা দেখুন</p>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <input class="form-control" id="trackInput" type="text" data-i18n-placeholder="track_placeholder" style="flex:1; min-width:220px;">
+        <button type="button" class="btn btn-primary" id="trackBtn" onclick="trackOrder()" data-i18n="track_btn">ট্র্যাক করুন</button>
+      </div>
+    </div>
+
+    <div id="trackResult" style="display:none;"></div>
+  </div>
+</section>
+
+<div class="toast-container" id="toastContainer"></div>
+<script src="/js/icons.js"></script>
+<script src="/js/i18n.js"></script>
+<script src="/js/cart.js"></script>
+<script>
+document.getElementById('brandLogoMark').innerHTML = svgIcon('layers', 20);
+document.getElementById('iconPkgTop').innerHTML = svgIcon('package', 13);
+
+let lastOrder = null;
+
+document.getElementById('trackInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') trackOrder();
+});
+
+async function trackOrder() {
+  const num = document.getElementById('trackInput').value.trim();
+  if (!num) { showToast(t('track_placeholder'), 'error'); return; }
+
+  const btn = document.getElementById('trackBtn');
+  btn.disabled = true;
+
+  const data = await fetch(`/api/orders/track/${encodeURIComponent(num)}`).then(r => r.json());
+  btn.disabled = false;
+
+  const resultEl = document.getElementById('trackResult');
+  if (!data.success) {
+    lastOrder = null;
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = `
+      <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:12px; padding:28px; text-align:center;">
+        <h3 style="color:#991b1b; margin-bottom:6px;">${getLang() === 'en' ? 'Order Not Found' : 'অর্ডার পাওয়া যায়নি'}</h3>
+        <p style="color:#6b7280; font-size:14px;">${getLang() === 'en' ? 'Please verify the order number and try again.' : 'অর্ডার নম্বরটি সঠিক কিনা যাচাই করে আবার চেষ্টা করুন।'}</p>
+      </div>
+    `;
+    return;
+  }
+
+  lastOrder = data.order;
+  renderTrackResult();
+}
+
+function renderTrackResult() {
+  if (!lastOrder) return;
+  const o = lastOrder;
+  const isEn = getLang() === 'en';
+  const resultEl = document.getElementById('trackResult');
+
+  const statusMap = {
+    pending: { label: t('status_pending'), class: 'status-pending' },
+    confirmed: { label: t('status_confirmed'), class: 'status-confirmed' },
+    processing: { label: t('status_processing'), class: 'status-processing' },
+    shipped: { label: t('status_shipped'), class: 'status-shipped' },
+    delivered: { label: t('status_delivered'), class: 'status-delivered' },
+    cancelled: { label: t('status_cancelled'), class: 'status-cancelled' }
+  };
+
+  const payBadgeMap = {
+    pending: `<span class="status-badge status-pending">${t('pay_pending')}</span>`,
+    paid: `<span class="status-badge status-delivered">${t('pay_paid')}</span>`,
+    failed: `<span class="status-badge status-cancelled">${t('pay_failed')}</span>`
+  };
+
+  const st = statusMap[o.order_status] || statusMap.pending;
+  const steps = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
+  const currentStep = Math.max(0, steps.indexOf(o.order_status));
+  const progressPct = o.order_status === 'cancelled' ? 0 : Math.min(100, (currentStep / (steps.length - 1)) * 100);
+
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = `
+    <div style="background:white; border:1px solid var(--border); border-radius:16px; padding:30px;">
+      <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:25px; flex-wrap:wrap; gap:10px;">
+        <div>
+          <div style="font-size:12.5px; color:var(--text-light);">${t('order_number')}</div>
+          <div style="font-size:22px; font-weight:700; color:var(--dark);">${escapeHtml(o.order_number)}</div>
+        </div>
+        <span class="status-badge ${st.class}" style="font-size:13px; padding:7px 14px;">${st.label}</span>
+      </div>
+
+      ${o.order_status !== 'cancelled' ? `
+      <div style="margin-bottom:30px;">
+        <div style="display:flex; justify-content:space-between; position:relative;">
+          <div style="position:absolute; top:15px; left:10%; right:10%; height:3px; background:var(--border); z-index:0;"></div>
+          <div style="position:absolute; top:15px; left:10%; height:3px; background:var(--primary); z-index:1; width:${progressPct * 0.8}%"></div>
+          ${steps.map((s, i) => {
+            const done = i <= currentStep;
+            const sm = statusMap[s];
+            return `
+            <div style="display:flex; flex-direction:column; align-items:center; gap:6px; z-index:2; flex:1;">
+              <div style="width:32px; height:32px; border-radius:50%; background:${done ? 'var(--primary)' : 'var(--border)'}; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:${done ? 'white' : 'var(--text-light)'};">
+                ${done ? svgIcon('check', 15) : (i + 1)}
+              </div>
+              <div style="font-size:11px; text-align:center; color:${done ? 'var(--primary)' : 'var(--text-light)'}; font-weight:${done ? '600' : '400'};">${sm.label}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>` : ''}
+
+      <div class="order-info-grid">
+        <div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:15px;">
+          <div style="font-size:12px; color:var(--text-light); margin-bottom:5px;">${t('customer')}</div>
+          <div style="font-weight:600;">${escapeHtml(o.customer_name)}</div>
+          <div style="font-size:13.5px; color:var(--text-light);">${escapeHtml(o.customer_phone)}</div>
+        </div>
+        <div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:15px;">
+          <div style="font-size:12px; color:var(--text-light); margin-bottom:5px;">${t('payment')}</div>
+          <div style="font-weight:600; margin-bottom:4px;">${o.payment_method === 'bkash' ? 'bKash' : t('cod_title')}</div>
+          <div>${payBadgeMap[o.payment_status] || ''}</div>
+          ${o.bkash_transaction_id ? `<div style="font-size:12px;color:var(--text-light);margin-top:4px;">TrxID: ${escapeHtml(o.bkash_transaction_id)}</div>` : ''}
+        </div>
+        <div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:15px;">
+          <div style="font-size:12px; color:var(--text-light); margin-bottom:5px;">${t('delivery_info')}</div>
+          <div style="font-size:13.5px; font-weight:500;">${escapeHtml(o.district)}${o.thana ? ', ' + escapeHtml(o.thana) : ''}, ${escapeHtml(o.shipping_address)}</div>
+        </div>
+        <div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:15px;">
+          <div style="font-size:12px; color:var(--text-light); margin-bottom:5px;">${t('total')}</div>
+          <div style="font-size:21px; font-weight:700; color:var(--primary);">${formatPrice(o.total)}</div>
+          <div style="font-size:12px; color:var(--text-light);">${t('subtotal')}: ${formatPrice(o.subtotal)} + ${t('shipping_charge')}: ${formatPrice(o.shipping_cost)}</div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-weight:700; margin-bottom:12px;">${t('items_list')}:</div>
+        ${(Array.isArray(o.items) ? o.items : []).map(item => `
+          <div style="display:flex; gap:12px; padding:10px 0; border-bottom:1px solid var(--border);">
+            <img src="${escapeHtml(item.image || '/img/no-image.svg')}" style="width:52px;height:52px;border-radius:8px;object-fit:cover;background:#f4f3ef;" onerror="this.src='/img/no-image.svg'">
+            <div style="flex:1;">
+              <div style="font-weight:600; font-size:14px;">${escapeHtml(isEn && item.name_en ? item.name_en : item.name)}</div>
+              <div style="font-size:12px; color:var(--text-light);">${escapeHtml(translateAttr(item.color || ''))} ${escapeHtml(translateAttr(item.size || ''))} · ×${item.quantity}</div>
+            </div>
+            <div style="font-weight:700; color:var(--primary);">${formatPrice(item.price * item.quantity)}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+const params = new URLSearchParams(window.location.search);
+if (params.get('order')) {
+  document.getElementById('trackInput').value = params.get('order');
+  trackOrder();
+}
+
+fetch('/api/settings').then(r => r.json()).then(d => {
+  if (d.success) {
+    window._settings = d.settings;
+    document.getElementById('shopName').textContent = getLang() === 'en' ? (d.settings.shop_name_en || 'Lungi Ghar') : (d.settings.shop_name || 'লুঙ্গি ঘর');
+  }
+});
+
+window.onLanguageChange = function () {
+  if (window._settings) {
+    document.getElementById('shopName').textContent = getLang() === 'en' ? (window._settings.shop_name_en || 'Lungi Ghar') : (window._settings.shop_name || 'লুঙ্গি ঘর');
+  }
+  renderTrackResult();
+  renderAuthHeader();
+};
+
+initAuthHeader();
+</script>
+</body>
+</html>

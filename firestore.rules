@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Products & Categories: anyone can read (safe for public storefront / apps), writes reserved for Admin SDK
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Orders: confidential, read & write exclusively handled by backend Admin SDK
+    match /orders/{orderId} {
+      allow read, write: if false;
+    }
+
+    // Customer Users: confidential, handled by backend Admin SDK
+    match /users/{userId} {
+      allow read, write: if false;
+    }
+
+    // Analytics & Totals: confidential
+    match /analytics/{docId} {
+      allow read, write: if false;
+    }
+
+    // Default deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Categories - Admin Console</title>
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar"></aside>
+
+  <div class="main-content">
+    <div class="admin-topbar">
+      <div class="topbar-title" id="pageTitle">ক্যাটাগরি ব্যবস্থাপনা</div>
+      <div class="topbar-actions">
+        <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('catModal').classList.add('open')" id="btnAdd">নতুন ক্যাটাগরি</button>
+        <div class="admin-avatar">A</div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="table-card">
+        <div class="table-card-header">
+          <div class="table-card-title" id="hdrCats">সব ক্যাটাগরি</div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>নাম / Name</th>
+                <th>স্লাগ / Slug</th>
+                <th>পণ্য সংখ্যা</th>
+                <th>বিবরণ</th>
+                <th>তারিখ</th>
+                <th>অ্যাকশন</th>
+              </tr>
+            </thead>
+            <tbody id="catsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Category Modal -->
+<div class="modal-overlay" id="catModal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header">
+      <div class="modal-title" id="modalCatTitle">নতুন ক্যাটাগরি যোগ করুন</div>
+      <button type="button" class="modal-close" onclick="document.getElementById('catModal').classList.remove('open')" id="iconClose"></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">নাম (বাংলা) *</label>
+          <input class="form-control" id="catName" type="text" placeholder="যেমন: জামদানি লুঙ্গি">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Name (English)</label>
+          <input class="form-control" id="catNameEn" type="text" placeholder="e.g. Jamdani Lungis">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">বিবরণ (বাংলা)</label>
+        <textarea class="form-control" id="catDesc" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description (English)</label>
+        <textarea class="form-control" id="catDescEn" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" onclick="document.getElementById('catModal').classList.remove('open')">বাতিল / Cancel</button>
+      <button type="button" class="btn btn-primary" onclick="addCategory()">সংরক্ষণ করুন</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<script src="/js/icons.js"></script>
+<script src="/js/i18n.js"></script>
+<script src="/admin/admin.js"></script>
+<script>
+document.getElementById('iconClose').innerHTML = svgIcon('x', 16);
+let cachedCats = [];
+
+function syncLabels() {
+  const en = getLang() === 'en';
+  renderAdminSidebar('categories');
+  document.getElementById('pageTitle').innerHTML = `${svgIcon('layers', 19)} ${en ? 'Categories' : 'ক্যাটাগরি ব্যবস্থাপনা'}`;
+  document.getElementById('btnAdd').innerHTML = `${svgIcon('plus', 15)} ${en ? 'New Category' : 'নতুন ক্যাটাগরি'}`;
+  document.getElementById('hdrCats').textContent = en ? 'All Categories' : 'সব ক্যাটাগরি';
+  document.getElementById('modalCatTitle').textContent = en ? 'Add Category' : 'নতুন ক্যাটাগরি যোগ করুন';
+}
+
+async function loadCategories() {
+  const data = await fetch('/admin/api/categories').then(r => r.json());
+  cachedCats = data.categories || [];
+  renderCats();
+}
+
+function renderCats() {
+  const en = getLang() === 'en';
+  const tbody = document.getElementById('catsTable');
+  if (!cachedCats.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">—</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = cachedCats.map((c, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td>
+        <div style="font-weight:600;">${escapeHtml(c.name)}</div>
+        ${c.name_en ? `<div style="font-size:12px;color:var(--text-light);">${escapeHtml(c.name_en)}</div>` : ''}
+      </td>
+      <td><code style="background:var(--bg);padding:3px 8px;border-radius:4px;font-size:12px;">${escapeHtml(c.slug)}</code></td>
+      <td>${c.product_count || 0}</td>
+      <td style="color:var(--text-light);font-size:13px;">${escapeHtml(en && c.description_en ? c.description_en : (c.description || '—'))}</td>
+      <td style="font-size:12px;color:var(--text-light);">${formatDate(c.created_at)}</td>
+      <td>
+        <button type="button" class="btn btn-danger btn-xs" onclick="deleteCategory(${c.id}, ${JSON.stringify(c.name).replace(/"/g, '&quot;')})">${svgIcon('trash', 13)}</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function addCategory() {
+  const name = document.getElementById('catName').value.trim();
+  if (!name) { showToast('নাম পূরণ করুন', 'error'); return; }
+
+  const formData = new FormData();
+  formData.append('name', name);
+  formData.append('name_en', document.getElementById('catNameEn').value.trim());
+  formData.append('description', document.getElementById('catDesc').value.trim());
+  formData.append('description_en', document.getElementById('catDescEn').value.trim());
+
+  const data = await fetch('/admin/api/categories', { method: 'POST', body: formData }).then(r => r.json());
+  if (data.success) {
+    showToast(data.message, 'success');
+    document.getElementById('catModal').classList.remove('open');
+    ['catName', 'catNameEn', 'catDesc', 'catDescEn'].forEach(id => { document.getElementById(id).value = ''; });
+    loadCategories();
+  } else {
+    showToast(data.message || 'Error', 'error');
+  }
+}
+
+async function deleteCategory(id, name) {
+  if (!confirm(`Delete "${name}"?`)) return;
+  const data = await fetch(`/admin/api/categories/${id}`, { method: 'DELETE' }).then(r => r.json());
+  if (data.success) {
+    showToast(data.message, 'success');
+    loadCategories();
+  }
+}
+
+window.onLanguageChange = function () {
+  syncLabels();
+  renderCats();
+};
+
+syncLabels();
+checkSession().then(a => { if (a) loadCategories(); });
+</script>
+</body>
+</html>

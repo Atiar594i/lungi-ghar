@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment variables
+.env
+.env.local
+firebase-service-account.json
+
+# SQLite database files
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Cloudflare credentials / logs
+cloudflared.log
+start_tunnel.js
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

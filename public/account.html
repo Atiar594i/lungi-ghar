@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Account - Lungi Ghar</title>
+  <link id="siteFavicon" rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/firebase-analytics.js"></script>
+</head>
+<body>
+<div class="top-bar">
+  <div class="container">
+    <span class="top-bar-item"><span id="iconUserTop"></span> <span data-i18n="account_title">আমার অ্যাকাউন্ট</span></span>
+    <div class="top-bar-right"><div data-lang-switcher></div></div>
+  </div>
+</div>
+
+<header class="header">
+  <div class="container">
+    <div class="header-inner">
+      <a href="/" class="logo">
+        <div class="logo-mark" id="brandLogoMark"></div>
+        <div class="logo-text"><span id="shopName">লুঙ্গি ঘর</span><span data-i18n="account_title">আমার অ্যাকাউন্ট</span></div>
+      </a>
+      <div class="header-actions" style="margin-left:auto;">
+        <a href="/" class="btn btn-outline btn-sm" data-i18n="continue_shopping">আরও কেনাকাটা করুন</a>
+        <button type="button" class="btn btn-outline btn-sm" onclick="openCart()">
+          <span id="iconCartBtn"></span> <span data-i18n="cart">কার্ট</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="section">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="/" data-i18n="nav_home">হোম</a>
+      <span class="breadcrumb-sep">/</span>
+      <span data-i18n="account_title">আমার অ্যাকাউন্ট</span>
+    </div>
+
+    <!-- Top Account KPI Cards -->
+    <div class="account-kpi-grid">
+      <div class="account-kpi-card">
+        <div class="account-kpi-icon primary" id="kpiIconTotal"></div>
+        <div>
+          <div class="account-kpi-val" id="kpiTotalOrders">0</div>
+          <div class="account-kpi-lbl" data-i18n="order_summary_kpi">মোট অর্ডার</div>
+        </div>
+      </div>
+      <div class="account-kpi-card">
+        <div class="account-kpi-icon warning" id="kpiIconPending"></div>
+        <div>
+          <div class="account-kpi-val" id="kpiPendingOrders">0</div>
+          <div class="account-kpi-lbl" data-i18n="order_pending_kpi">পেন্ডিং অর্ডার</div>
+        </div>
+      </div>
+      <div class="account-kpi-card">
+        <div class="account-kpi-icon success" id="kpiIconConfirmed"></div>
+        <div>
+          <div class="account-kpi-val" id="kpiConfirmedOrders">0</div>
+          <div class="account-kpi-lbl" data-i18n="order_confirmed_kpi">নিশ্চিত ও ডেলিভারি</div>
+        </div>
+      </div>
+      <div class="account-kpi-card">
+        <div class="account-kpi-icon info" id="kpiIconSpent"></div>
+        <div>
+          <div class="account-kpi-val" id="kpiTotalSpent">৳০</div>
+          <div class="account-kpi-lbl" data-i18n="total_spent_kpi">মোট কেনাকাটা</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="account-grid">
+      <!-- Sidebar Navigation -->
+      <div>
+        <div class="account-nav" style="margin-bottom:14px;">
+          <div style="padding:10px 12px 14px; border-bottom:1px solid var(--border); margin-bottom:10px;">
+            <div style="font-weight:700; color:var(--dark); font-size:15.5px;" id="userDisplayName">—</div>
+            <div style="font-size:12.5px; color:var(--text-light);" id="userDisplayPhone">—</div>
+            <div style="font-size:12px; color:var(--primary); margin-top:2px;" id="userDisplayEmail">—</div>
+          </div>
+          <button type="button" class="account-nav-btn active" id="btnNavOrders" onclick="switchTab('orders', this)">
+            <span id="navIconOrders"></span> <span data-i18n="orders_tab">আমার অর্ডারসমূহ</span>
+            <span id="navOrderBadge" class="badge" style="position:static; margin-left:auto; display:none;">0</span>
+          </button>
+          <button type="button" class="account-nav-btn" id="btnNavAddress" onclick="switchTab('addressbook', this)">
+            <span id="navIconAddress"></span> <span data-i18n="address_book_tab">অ্যাড্রেস বুক</span>
+          </button>
+          <button type="button" class="account-nav-btn" id="btnNavProfile" onclick="switchTab('profile', this)">
+            <span id="navIconProfile"></span> <span data-i18n="profile_tab">প্রোফাইল তথ্য</span>
+          </button>
+          <button type="button" class="account-nav-btn" id="btnNavSec" onclick="switchTab('security', this)">
+            <span id="navIconSec"></span> <span data-i18n="security_tab">পাসওয়ার্ড পরিবর্তন</span>
+          </button>
+          <button type="button" class="account-nav-btn" style="color:#b91c1c;" onclick="logoutUser()">
+            <span id="navIconOut"></span> <span data-i18n="logout">লগআউট</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Panels -->
+      <div>
+        <!-- 1. Orders Tab -->
+        <div class="account-panel" id="tab-orders">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+            <h2 style="font-size:20px; color:var(--dark); margin:0;" data-i18n="orders_tab">আমার অর্ডারসমূহ</h2>
+            <a href="/" class="btn btn-outline btn-sm" data-i18n="continue_shopping">নতুন অর্ডার করুন</a>
+          </div>
+
+          <!-- Order Status Filter Pills -->
+          <div class="order-filter-bar">
+            <button type="button" class="order-filter-pill active" onclick="filterUserOrders('all', this)">
+              <span data-i18n="filter_all">সব অর্ডার</span> <span id="cntAll">(0)</span>
+            </button>
+            <button type="button" class="order-filter-pill" onclick="filterUserOrders('pending', this)">
+              <span data-i18n="filter_pending">পেন্ডিং</span> <span id="cntPending">(0)</span>
+            </button>
+            <button type="button" class="order-filter-pill" onclick="filterUserOrders('confirmed', this)">
+              <span data-i18n="filter_confirmed">নিশ্চিত</span> <span id="cntConfirmed">(0)</span>
+            </button>
+            <button type="button" class="order-filter-pill" onclick="filterUserOrders('delivered', this)">
+              <span data-i18n="filter_delivered">ডেলিভারি</span> <span id="cntDelivered">(0)</span>
+            </button>
+          </div>
+
+          <div id="ordersList"><div class="spinner"></div></div>
+        </div>
+
+        <!-- 2. Address Book Tab -->
+        <div class="account-panel" id="tab-addressbook" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--border);">
+            <div>
+              <h2 style="font-size:20px; color:var(--dark); margin:0;" data-i18n="address_book_tab">অ্যাড্রেস বুক</h2>
+              <p style="font-size:13px; color:var(--text-light); margin:4px 0 0;" data-i18n="saved_addresses">আপনার ডেলিভারি ঠিকানা লিখে সংরক্ষণ করুন। চেকআউটে স্বয়ংক্রিয়ভাবে ব্যবহৃত হবে।</p>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" onclick="openAddressModal()">
+              <span id="iconPlusAddr"></span> <span data-i18n="add_new_address">নতুন ঠিকানা যোগ করুন</span>
+            </button>
+          </div>
+
+          <div id="addressBookList"><div class="spinner"></div></div>
+        </div>
+
+        <!-- 3. Profile Tab -->
+        <div class="account-panel" id="tab-profile" style="display:none;">
+          <h2 style="font-size:20px; margin-bottom:18px; color:var(--dark);" data-i18n="profile_tab">প্রোফাইল তথ্য</h2>
+          <form onsubmit="saveProfile(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label required" data-i18n="full_name">পূর্ণ নাম</label>
+                <input class="form-control" id="profName" type="text" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" data-i18n="phone_number">মোবাইল নম্বর</label>
+                <input class="form-control" id="profPhone" type="tel" disabled style="background:var(--bg);">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" data-i18n="email_optional">জিমেইল / ইমেইল</label>
+                <input class="form-control" id="profEmail" type="email" disabled style="background:var(--bg);">
+              </div>
+              <div class="form-group">
+                <label class="form-label" data-i18n="district">ডিফল্ট জেলা</label>
+                <select class="form-control" id="profDistrict"></select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="full_address">ডিফল্ট বিস্তারিত ঠিকানা</label>
+              <textarea class="form-control" id="profAddress" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" data-i18n="save_changes">পরিবর্তন সংরক্ষণ করুন</button>
+          </form>
+        </div>
+
+        <!-- 4. Security Tab -->
+        <div class="account-panel" id="tab-security" style="display:none;">
+          <h2 style="font-size:20px; margin-bottom:18px; color:var(--dark);" data-i18n="security_tab">পাসওয়ার্ড পরিবর্তন</h2>
+          <form onsubmit="changeUserPass(event)" style="max-width:420px;">
+            <div class="form-group">
+              <label class="form-label required" data-i18n="current_password">বর্তমান পাসওয়ার্ড</label>
+              <input class="form-control" id="curPass" type="password" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label required" data-i18n="new_password">নতুন পাসওয়ার্ড</label>
+              <input class="form-control" id="newPass" type="password" minlength="6" required>
+            </div>
+            <button type="submit" class="btn btn-primary" data-i18n="save_changes">পরিবর্তন সংরক্ষণ করুন</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Address Book Modal (Add / Edit) -->
+<div class="account-modal-overlay" id="addressModal" style="display:none;" onclick="if(event.target===this)closeAddressModal()">
+  <div class="account-modal">
+    <div class="account-modal-header">
+      <h3 style="margin:0; font-size:17px; color:var(--dark);" id="addressModalTitle" data-i18n="add_new_address">নতুন ঠিকানা যোগ করুন</h3>
+      <button type="button" class="cart-close" onclick="closeAddressModal()" id="iconCloseAddrModal"></button>
+    </div>
+    <div class="account-modal-body">
+      <form onsubmit="handleSaveAddress(event)">
+        <input type="hidden" id="addrEditId" value="">
+        <div class="form-group">
+          <label class="form-label required" data-i18n="address_title_label">ঠিকানার লেবেল</label>
+          <div style="display:flex; gap:10px;">
+            <label style="display:flex; align-items:center; gap:6px; font-size:13.5px; cursor:pointer;">
+              <input type="radio" name="addrTitleOption" value="বাসা / Home" checked onchange="document.getElementById('addrTitle').value=getLang()==='en'?'Home':'বাসা / Home'">
+              <span data-i18n="addr_home">বাসা (Home)</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; font-size:13.5px; cursor:pointer;">
+              <input type="radio" name="addrTitleOption" value="অফিস / Office" onchange="document.getElementById('addrTitle').value=getLang()==='en'?'Office':'অফিস / Office'">
+              <span data-i18n="addr_office">অফিস (Office)</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; font-size:13.5px; cursor:pointer;">
+              <input type="radio" name="addrTitleOption" value="অন্যান্য / Other" onchange="document.getElementById('addrTitle').value=getLang()==='en'?'Other':'অন্যান্য / Other'">
+              <span data-i18n="addr_other">অন্যান্য</span>
+            </label>
+          </div>
+          <input type="text" class="form-control" id="addrTitle" value="বাসা / Home" style="margin-top:8px;">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label required" data-i18n="recipient_name">প্রাপকের নাম</label>
+            <input type="text" class="form-control" id="addrRecipient" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label required" data-i18n="recipient_phone">প্রাপকের মোবাইল</label>
+            <input type="tel" class="form-control" id="addrPhone" placeholder="01XXXXXXXXX" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label required" data-i18n="district">জেলা (৬৪ জেলা)</label>
+            <select class="form-control" id="addrDistrict" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="thana">উপজেলা / থানা</label>
+            <input type="text" class="form-control" id="addrThana">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label required" data-i18n="full_address">বিস্তারিত ঠিকানা (বাড়ি, রোড, এলাকা/গ্রাম)</label>
+          <textarea class="form-control" id="addrDetail" rows="3" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; cursor:pointer;">
+            <input type="checkbox" id="addrIsDefault">
+            <span data-i18n="default_address_badge">ডিফল্ট ডেলিভারি ঠিকানা হিসেবে সেট করুন</span>
+          </label>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+          <button type="button" class="btn btn-outline" onclick="closeAddressModal()" data-i18n="cancel">বাতিল</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveAddress" data-i18n="save_changes">সংরক্ষণ করুন</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="account-modal-overlay" id="userOrderModal" style="display:none;" onclick="if(event.target===this)closeOrderModal()">
+  <div class="account-modal" style="max-width:620px;">
+    <div class="account-modal-header">
+      <h3 style="margin:0; font-size:17px; color:var(--dark);" id="orderModalTitle" data-i18n="order_details">অর্ডারের বিবরণ</h3>
+      <button type="button" class="cart-close" onclick="closeOrderModal()" id="iconCloseOrdModal"></button>
+    </div>
+    <div class="account-modal-body" id="userOrderModalBody">Loading...</div>
+    <div style="padding:16px 22px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <button type="button" class="btn btn-outline btn-sm" onclick="printUserInvoice()">
+        <span id="iconPrintOrd"></span> <span data-i18n="invoice_print">ইনভয়েস প্রিন্ট</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-sm" onclick="closeOrderModal()" data-i18n="modal_ok">ঠিক আছে</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cart Sidebar -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h3><span id="iconCartTitle"></span> <span data-i18n="cart_title">শপিং কার্ট</span></h3>
+    <button type="button" class="cart-close" onclick="closeCart()" id="iconCartClose"></button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer" id="cartFooter" style="display:none">
+    <div class="cart-summary">
+      <div class="cart-row"><span data-i18n="subtotal">সাবটোটাল</span><span id="cartSubtotal">৳০</span></div>
+      <div class="cart-row total"><span data-i18n="total">সর্বমোট</span><span id="cartTotal">৳০</span></div>
+    </div>
+    <button type="button" class="btn btn-primary btn-full btn-lg" onclick="goToCheckout()" data-i18n="checkout_btn">চেকআউট করুন</button>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<script src="/js/icons.js"></script>
+<script src="/js/i18n.js"></script>
+<script src="/js/cart.js"></script>
+<script>
+document.getElementById('brandLogoMark').innerHTML = svgIcon('layers', 20);
+document.getElementById('iconUserTop').innerHTML = svgIcon('user', 13);
+document.getElementById('iconCartBtn').innerHTML = svgIcon('cart', 15);
+document.getElementById('navIconOrders').innerHTML = svgIcon('package', 17);
+document.getElementById('navIconAddress').innerHTML = svgIcon('mapPin', 17);
+document.getElementById('navIconProfile').innerHTML = svgIcon('user', 17);
+document.getElementById('navIconSec').innerHTML = svgIcon('lock', 17);
+document.getElementById('navIconOut').innerHTML = svgIcon('logOut', 17);
+document.getElementById('kpiIconTotal').innerHTML = svgIcon('package', 22);
+document.getElementById('kpiIconPending').innerHTML = svgIcon('refresh', 22);
+document.getElementById('kpiIconConfirmed').innerHTML = svgIcon('checkCircle', 22);
+document.getElementById('kpiIconSpent').innerHTML = svgIcon('wallet', 22);
+document.getElementById('iconPlusAddr').innerHTML = svgIcon('plus', 15);
+document.getElementById('iconCartTitle').innerHTML = svgIcon('cart', 19);
+document.getElementById('iconCartClose').innerHTML = svgIcon('x', 16);
+document.getElementById('iconCloseAddrModal').innerHTML = svgIcon('x', 16);
+document.getElementById('iconCloseOrdModal').innerHTML = svgIcon('x', 16);
+document.getElementById('iconPrintOrd').innerHTML = svgIcon('printer', 15);
+
+let currentUser = null;
+let userOrders = [];
+let userAddresses = [];
+let activeOrderFilter = 'all';
+
+function populateDistricts(selected = '', selId = 'profDistrict') {
+  const sel = document.getElementById(selId);
+  if (!sel) return;
+  const prev = selected || sel.value;
+  sel.innerHTML = `<option value="">${t('select_district')}</option>` +
+    getDistrictList().map(d => `<option value="${escapeHtml(d.value)}" ${prev === d.value ? 'selected' : ''}>${escapeHtml(d.label)}</option>`).join('');
+}
+
+function switchTab(tab, btn) {
+  ['orders', 'addressbook', 'profile', 'security'].forEach(k => {
+    const el = document.getElementById(`tab-${k}`);
+    if (el) el.style.display = k === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.account-nav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (tab === 'addressbook') loadAddresses();
+}
+
+async function loadAccount() {
+  const me = await fetch('/api/auth/me').then(r => r.json());
+  if (!me.user) {
+    window.location.href = '/login?redirect=/account';
+    return;
+  }
+  currentUser = me.user;
+  document.getElementById('userDisplayName').textContent = currentUser.name;
+  document.getElementById('userDisplayPhone').textContent = currentUser.phone;
+  document.getElementById('userDisplayEmail').textContent = currentUser.email || '';
+  document.getElementById('profName').value = currentUser.name || '';
+  document.getElementById('profPhone').value = currentUser.phone || '';
+  document.getElementById('profEmail').value = currentUser.email || '';
+  document.getElementById('profAddress').value = currentUser.address || '';
+  populateDistricts(currentUser.district || '', 'profDistrict');
+
+  await loadOrdersData();
+  await loadAddresses();
+}
+
+async function loadOrdersData() {
+  try {
+    const res = await fetch('/api/auth/orders').then(r => r.json());
+    userOrders = res.orders || [];
+    const sum = res.summary || {};
+
+    const isEn = getLang() === 'en';
+    document.getElementById('kpiTotalOrders').textContent = sum.totalOrders ?? userOrders.length;
+    document.getElementById('kpiPendingOrders').textContent = sum.pendingOrders ?? userOrders.filter(o => o.order_status === 'pending').length;
+    document.getElementById('kpiConfirmedOrders').textContent = (sum.confirmedOrders ?? 0) + (sum.processingOrders ?? 0) + (sum.shippedOrders ?? 0) + (sum.deliveredOrders ?? 0);
+    document.getElementById('kpiTotalSpent').textContent = formatPrice(sum.totalSpent ?? 0);
+
+    const ordBadge = document.getElementById('navOrderBadge');
+    if (ordBadge) {
+      ordBadge.textContent = userOrders.length;
+      ordBadge.style.display = userOrders.length > 0 ? 'inline-block' : 'none';
+    }
+
+    document.getElementById('cntAll').textContent = `(${userOrders.length})`;
+    document.getElementById('cntPending').textContent = `(${sum.pendingOrders ?? userOrders.filter(o => o.order_status === 'pending').length})`;
+    document.getElementById('cntConfirmed').textContent = `(${sum.confirmedOrders ?? userOrders.filter(o => o.order_status === 'confirmed').length})`;
+    document.getElementById('cntDelivered').textContent = `(${sum.deliveredOrders ?? userOrders.filter(o => o.order_status === 'delivered').length})`;
+
+    renderOrders();
+  } catch (err) {
+    console.error('Failed loading orders:', err);
+  }
+}
+
+function filterUserOrders(status, btn) {
+  activeOrderFilter = status;
+  document.querySelectorAll('.order-filter-pill').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderOrders();
+}
+
+function renderOrders() {
+  const el = document.getElementById('ordersList');
+  const isEn = getLang() === 'en';
+
+  let list = userOrders;
+  if (activeOrderFilter === 'pending') {
+    list = userOrders.filter(o => o.order_status === 'pending');
+  } else if (activeOrderFilter === 'confirmed') {
+    list = userOrders.filter(o => o.order_status === 'confirmed' || o.order_status === 'processing');
+  } else if (activeOrderFilter === 'delivered') {
+    list = userOrders.filter(o => o.order_status === 'delivered');
+  }
+
+  if (list.length === 0) {
+    el.innerHTML = `
+      <div style="text-align:center; padding:42px 20px; color:var(--text-light); background:#f8fafc; border-radius:12px; border:1px dashed var(--border);">
+        <p style="margin-bottom:14px; font-size:15px;">${isEn ? 'No orders match this status.' : 'এই স্ট্যাটাসে কোনো অর্ডার নেই।'}</p>
+        <a href="/" class="btn btn-primary btn-sm">${t('continue_shopping')}</a>
+      </div>`;
+    return;
+  }
+
+  const stMap = {
+    pending: [t('status_pending'), 'status-pending'],
+    confirmed: [t('status_confirmed'), 'status-confirmed'],
+    processing: [t('status_processing'), 'status-processing'],
+    shipped: [t('status_shipped'), 'status-shipped'],
+    delivered: [t('status_delivered'), 'status-delivered'],
+    cancelled: [t('status_cancelled'), 'status-cancelled']
+  };
+
+  el.innerHTML = list.map(o => {
+    const [stLabel, stCls] = stMap[o.order_status] || [o.order_status, 'status-pending'];
+    const payLabel = o.payment_status === 'paid' ? t('pay_paid') : t('pay_pending');
+    return `
+      <div style="border:1px solid var(--border); border-radius:12px; padding:18px; margin-bottom:14px; background:#fff; transition:box-shadow 0.2s;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid var(--border);">
+          <div>
+            <strong style="color:var(--dark); font-size:15.5px;">${escapeHtml(o.order_number)}</strong>
+            <div style="font-size:12px; color:var(--text-light); margin-top:2px;">${new Date(o.created_at).toLocaleDateString(isEn ? 'en-US' : 'bn-BD', { year:'numeric', month:'short', day:'numeric' })}</div>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <span class="status-badge ${stCls}">${stLabel}</span>
+            <span class="status-badge ${o.payment_status === 'paid' ? 'status-delivered' : 'status-pending'}">${o.payment_method === 'bkash' ? 'bKash' : 'COD'} · ${payLabel}</span>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div style="font-size:13.5px; color:var(--text); flex:1; min-width:200px;">
+            <div style="color:var(--dark); font-weight:600; margin-bottom:4px;">
+              ${o.items.map(i => `${escapeHtml(isEn && i.name_en ? i.name_en : i.name)} ×${i.quantity}`).join(', ')}
+            </div>
+            <div style="font-size:12px; color:var(--text-light);">
+              ${isEn ? 'Deliver to' : 'ডেলিভারি'}: ${escapeHtml(o.customer_name)} · ${escapeHtml(o.district)}
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <strong style="color:var(--primary); font-size:17px; margin-right:6px;">${formatPrice(o.total)}</strong>
+            <button type="button" class="btn btn-outline btn-sm" onclick="viewOrderDetails('${o.order_number}')">
+              ${isEn ? 'Details' : 'বিস্তারিত'}
+            </button>
+            <a href="/track-order?order=${encodeURIComponent(o.order_number)}" class="btn btn-primary btn-sm">${t('track_btn')}</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+let activeViewingOrder = null;
+function viewOrderDetails(orderNumber) {
+  const o = userOrders.find(x => x.order_number === orderNumber);
+  if (!o) return;
+  activeViewingOrder = o;
+  const isEn = getLang() === 'en';
+  const stMap = {
+    pending: [t('status_pending'), 'status-pending'],
+    confirmed: [t('status_confirmed'), 'status-confirmed'],
+    processing: [t('status_processing'), 'status-processing'],
+    shipped: [t('status_shipped'), 'status-shipped'],
+    delivered: [t('status_delivered'), 'status-delivered'],
+    cancelled: [t('status_cancelled'), 'status-cancelled']
+  };
+  const [stLabel, stCls] = stMap[o.order_status] || [o.order_status, 'status-pending'];
+
+  document.getElementById('orderModalTitle').textContent = `${isEn ? 'Order' : 'অর্ডার'}: ${o.order_number}`;
+  document.getElementById('userOrderModalBody').innerHTML = `
+    <div id="printableInvoiceArea">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid var(--border);">
+        <div>
+          <h2 style="margin:0; font-size:18px; color:var(--dark);">${escapeHtml((window._settings && (isEn ? (window._settings.shop_name_en || window._settings.shop_name) : window._settings.shop_name)) || (isEn ? 'Lungi Ghar' : 'লুঙ্গি ঘর'))}</h2>
+          <div style="font-size:12px; color:var(--text-light); margin-top:2px;">${isEn ? 'Official Receipt & Order Invoice' : 'অফিসিয়াল অর্ডার রসিদ'}</div>
+        </div>
+        <div style="text-align:right;">
+          <span class="status-badge ${stCls}" style="font-size:12px;">${stLabel}</span>
+          <div style="font-size:12px; color:var(--text-light); margin-top:4px;">${new Date(o.created_at).toLocaleString(isEn ? 'en-US' : 'bn-BD')}</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; background:#f8fafc; padding:12px 14px; border-radius:8px; margin-bottom:16px; font-size:13px;">
+        <div>
+          <strong style="color:var(--dark);">${isEn ? 'Customer & Delivery Info' : 'গ্রাহক ও ডেলিভারির তথ্য'}:</strong>
+          <div style="margin-top:4px;">${escapeHtml(o.customer_name)}</div>
+          <div style="color:var(--text-light);">${escapeHtml(o.customer_phone)}</div>
+          <div style="color:var(--text-light);">${escapeHtml(o.customer_email || '—')}</div>
+        </div>
+        <div>
+          <strong style="color:var(--dark);">${isEn ? 'Shipping Destination' : 'ডেলিভারি ঠিকানা'}:</strong>
+          <div style="margin-top:4px;">${escapeHtml(o.district)}${o.thana ? ', ' + escapeHtml(o.thana) : ''}</div>
+          <div style="color:var(--text-light);">${escapeHtml(o.shipping_address)}</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <strong style="font-size:13.5px; color:var(--dark); display:block; margin-bottom:8px;">${isEn ? 'Order Items' : 'অর্ডারের পণ্যসমূহ'}:</strong>
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+          <thead>
+            <tr style="border-bottom:2px solid var(--border); text-align:left; color:var(--text-light);">
+              <th style="padding:6px 0;">${isEn ? 'Item' : 'পণ্য'}</th>
+              <th style="padding:6px 0; text-align:center;">${isEn ? 'Qty' : 'পরিমাণ'}</th>
+              <th style="padding:6px 0; text-align:right;">${isEn ? 'Total' : 'দাম'}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${o.items.map(i => `
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 0;">
+                  <div style="font-weight:600; color:var(--dark);">${escapeHtml(isEn && i.name_en ? i.name_en : i.name)}</div>
+                  <div style="font-size:11.5px; color:var(--text-light);">${i.color ? escapeHtml(translateAttr(i.color)) + ' · ' : ''}${escapeHtml(translateAttr(i.size))}</div>
+                </td>
+                <td style="padding:8px 0; text-align:center;">×${i.quantity}</td>
+                <td style="padding:8px 0; text-align:right; font-weight:600;">${formatPrice(i.price * i.quantity)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <div style="border-top:1px solid var(--border); padding-top:10px; font-size:13.5px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span>${t('subtotal')}:</span>
+          <span>${formatPrice(o.subtotal)}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span>${t('shipping_charge')}:</span>
+          <span>${o.shipping_cost > 0 ? formatPrice(o.shipping_cost) : t('free')}</span>
+        </div>
+        ${o.discount ? `
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px; color:#15803d; font-weight:600;">
+            <span>${isEn ? 'Promo Discount' : 'ডিসকাউন্ট'}:</span>
+            <span>-${formatPrice(o.discount)}</span>
+          </div>
+        ` : ''}
+        <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:700; color:var(--primary); margin-top:8px; padding-top:8px; border-top:1px dashed var(--border);">
+          <span>${t('total')}:</span>
+          <span>${formatPrice(o.total)}</span>
+        </div>
+        <div style="margin-top:10px; font-size:12px; color:var(--text-light);">
+          ${isEn ? 'Payment' : 'পেমেন্ট'}: <strong>${o.payment_method === 'bkash' ? 'bKash (Automated)' : 'Cash on Delivery (COD)'}</strong> · ${o.payment_status === 'paid' ? (isEn ? 'Paid' : 'পরিশোধিত') : (isEn ? 'Pending Payment' : 'বাকি')}
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('userOrderModal').style.display = 'flex';
+}
+
+function closeOrderModal() {
+  document.getElementById('userOrderModal').style.display = 'none';
+  activeViewingOrder = null;
+}
+
+function printUserInvoice() {
+  const content = document.getElementById('printableInvoiceArea');
+  if (!content) return;
+  const printWin = window.open('', '_blank', 'width=750,height=800');
+  printWin.document.write(`
+    <html>
+      <head>
+        <title>Invoice - ${activeViewingOrder ? activeViewingOrder.order_number : 'Lungi Ghar'}</title>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 24px; color: #1e293b; }
+          table { width: 100%; border-collapse: collapse; }
+          .status-badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; background: #e2e8f0; }
+        </style>
+      </head>
+      <body>
+        ${content.innerHTML}
+        <script>window.onload = function() { window.print(); }<\/script>
+      </body>
+    </html>
+  `);
+  printWin.document.close();
+}
+
+// ================= ADDRESS BOOK LOGIC =================
+async function loadAddresses() {
+  const container = document.getElementById('addressBookList');
+  if (!container) return;
+  try {
+    const res = await fetch('/api/auth/addresses').then(r => r.json());
+    userAddresses = res.addresses || [];
+    renderAddresses();
+  } catch (err) {
+    console.error('Failed loading addresses:', err);
+  }
+}
+
+function renderAddresses() {
+  const container = document.getElementById('addressBookList');
+  const isEn = getLang() === 'en';
+  if (!userAddresses.length) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:36px 20px; background:#f8fafc; border:1px dashed var(--border); border-radius:12px;">
+        <div style="width:48px; height:48px; margin:0 auto 12px; background:var(--primary-soft); color:var(--primary); border-radius:12px; display:flex; align-items:center; justify-content:center;">
+          ${svgIcon('mapPin', 24)}
+        </div>
+        <p style="font-size:15px; color:var(--dark); font-weight:600; margin-bottom:6px;">${isEn ? 'No addresses saved yet' : 'এখনও কোনো ঠিকানা সংরক্ষণ করা নেই'}</p>
+        <p style="font-size:13px; color:var(--text-light); margin-bottom:16px;">${isEn ? 'Add your delivery address to enjoy 1-click checkout' : 'আপনার ডেলিভারি ঠিকানা যোগ করুন যাতে সহজে দ্রুত অর্ডার করতে পারেন'}</p>
+        <button type="button" class="btn btn-primary btn-sm" onclick="openAddressModal()">
+          ${isEn ? '+ Add First Address' : '+ প্রথম ঠিকানা যোগ করুন'}
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="address-card-grid">
+      ${userAddresses.map(a => `
+        <div class="address-card ${a.is_default ? 'is-default' : ''}">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+            <span class="address-badge">${escapeHtml(a.title || (isEn ? 'Home' : 'বাসা'))}</span>
+            ${a.is_default ? `<span class="address-badge default">${isEn ? 'Default Delivery' : 'ডিফল্ট ঠিকানা'}</span>` : ''}
+          </div>
+          <div style="font-weight:700; color:var(--dark); font-size:15px; margin-bottom:4px;">${escapeHtml(a.recipient_name)}</div>
+          <div style="font-size:13px; color:var(--text); margin-bottom:4px;">${escapeHtml(a.recipient_phone)}</div>
+          <div style="font-size:12.5px; color:var(--text); margin-bottom:4px;">
+            <strong>${escapeHtml(a.district)}</strong>${a.thana ? ', ' + escapeHtml(a.thana) : ''}
+          </div>
+          <div style="font-size:13px; color:var(--text-light); line-height:1.4;">${escapeHtml(a.address)}</div>
+
+          <div class="address-card-actions">
+            ${!a.is_default ? `
+              <button type="button" class="btn btn-outline btn-sm" onclick="setDefaultAddress(${a.id})" style="font-size:12px; padding:4px 10px;">
+                ${isEn ? 'Set Default' : 'ডিফল্ট করুন'}
+              </button>
+            ` : ''}
+            <button type="button" class="btn btn-outline btn-sm" onclick="editAddress(${a.id})" style="font-size:12px; padding:4px 10px;">
+              ${isEn ? 'Edit' : 'পরিবর্তন'}
+            </button>
+            <button type="button" class="btn btn-danger btn-sm" onclick="deleteAddress(${a.id})" style="font-size:12px; padding:4px 10px; margin-left:auto;">
+              ${isEn ? 'Delete' : 'মুছুন'}
+            </button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function openAddressModal(editItem = null) {
+  const isEn = getLang() === 'en';
+  populateDistricts(editItem ? editItem.district : '', 'addrDistrict');
+  const titleEl = document.getElementById('addressModalTitle');
+  const editIdEl = document.getElementById('addrEditId');
+
+  if (editItem) {
+    titleEl.textContent = isEn ? 'Edit Delivery Address' : 'ঠিকানা পরিবর্তন করুন';
+    editIdEl.value = editItem.id;
+    document.getElementById('addrTitle').value = editItem.title || 'বাসা / Home';
+    document.getElementById('addrRecipient').value = editItem.recipient_name || '';
+    document.getElementById('addrPhone').value = editItem.recipient_phone || '';
+    document.getElementById('addrDistrict').value = editItem.district || '';
+    document.getElementById('addrThana').value = editItem.thana || '';
+    document.getElementById('addrDetail').value = editItem.address || '';
+    document.getElementById('addrIsDefault').checked = Boolean(editItem.is_default);
+  } else {
+    titleEl.textContent = isEn ? 'Add New Delivery Address' : 'নতুন ঠিকানা যোগ করুন';
+    editIdEl.value = '';
+    document.getElementById('addrTitle').value = 'বাসা / Home';
+    document.getElementById('addrRecipient').value = currentUser ? currentUser.name : '';
+    document.getElementById('addrPhone').value = currentUser ? currentUser.phone : '';
+    document.getElementById('addrDistrict').value = '';
+    document.getElementById('addrThana').value = '';
+    document.getElementById('addrDetail').value = '';
+    document.getElementById('addrIsDefault').checked = userAddresses.length === 0;
+  }
+
+  document.getElementById('addressModal').style.display = 'flex';
+}
+
+function closeAddressModal() {
+  document.getElementById('addressModal').style.display = 'none';
+}
+
+function editAddress(id) {
+  const addr = userAddresses.find(x => x.id === id);
+  if (addr) openAddressModal(addr);
+}
+
+async function handleSaveAddress(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btnSaveAddress');
+  btn.disabled = true;
+
+  const editId = document.getElementById('addrEditId').value;
+  const payload = {
+    title: document.getElementById('addrTitle').value.trim() || 'Home',
+    recipient_name: document.getElementById('addrRecipient').value.trim(),
+    recipient_phone: document.getElementById('addrPhone').value.trim(),
+    district: document.getElementById('addrDistrict').value,
+    thana: document.getElementById('addrThana').value.trim(),
+    address: document.getElementById('addrDetail').value.trim(),
+    is_default: document.getElementById('addrIsDefault').checked
+  };
+
+  const url = editId ? `/api/auth/addresses/${editId}` : '/api/auth/addresses';
+  const method = editId ? 'PUT' : 'POST';
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(r => r.json());
+
+    btn.disabled = false;
+    if (res.success) {
+      showToast(res.message || 'Saved', 'success');
+      closeAddressModal();
+      await loadAddresses();
+    } else {
+      showToast(res.message || 'Failed', 'error');
+    }
+  } catch {
+    btn.disabled = false;
+    showToast('Network error', 'error');
+  }
+}
+
+async function setDefaultAddress(id) {
+  try {
+    const res = await fetch(`/api/auth/addresses/${id}/default`, { method: 'POST' }).then(r => r.json());
+    if (res.success) {
+      showToast(res.message, 'success');
+      await loadAddresses();
+    } else {
+      showToast(res.message || 'Failed', 'error');
+    }
+  } catch {
+    showToast('Network error', 'error');
+  }
+}
+
+async function deleteAddress(id) {
+  const isEn = getLang() === 'en';
+  if (!confirm(isEn ? 'Delete this address?' : 'এই ঠিকানাটি মুছে ফেলতে চান?')) return;
+  try {
+    const res = await fetch(`/api/auth/addresses/${id}`, { method: 'DELETE' }).then(r => r.json());
+    if (res.success) {
+      showToast(res.message, 'success');
+      await loadAddresses();
+    } else {
+      showToast(res.message || 'Failed', 'error');
+    }
+  } catch {
+    showToast('Network error', 'error');
+  }
+}
+
+async function saveProfile(e) {
+  e.preventDefault();
+  const payload = {
+    name: document.getElementById('profName').value.trim(),
+    email: document.getElementById('profEmail').value.trim(),
+    district: document.getElementById('profDistrict').value,
+    address: document.getElementById('profAddress').value.trim()
+  };
+  const res = await fetch('/api/auth/profile', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(r => r.json());
+  if (res.success) {
+    currentUser = res.user;
+    document.getElementById('userDisplayName').textContent = res.user.name;
+    showToast(getLang() === 'en' ? 'Profile updated' : res.message, 'success');
+  } else {
+    showToast(res.message || 'Error', 'error');
+  }
+}
+
+async function changeUserPass(e) {
+  e.preventDefault();
+  const res = await fetch('/api/auth/change-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      current_password: document.getElementById('curPass').value,
+      new_password: document.getElementById('newPass').value
+    })
+  }).then(r => r.json());
+  if (res.success) {
+    showToast(getLang() === 'en' ? 'Password updated' : res.message, 'success');
+    document.getElementById('curPass').value = '';
+    document.getElementById('newPass').value = '';
+  } else {
+    showToast(res.message || 'Error', 'error');
+  }
+}
+
+async function logoutUser() {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  window.location.href = '/';
+}
+
+fetch('/api/settings').then(r => r.json()).then(d => {
+  if (d.success) {
+    window._settings = d.settings;
+    document.getElementById('shopName').textContent = getLang() === 'en' ? (d.settings.shop_name_en || 'Lungi Ghar') : (d.settings.shop_name || 'লুঙ্গি ঘর');
+  }
+});
+
+window.onLanguageChange = function () {
+  populateDistricts(currentUser ? currentUser.district : '', 'profDistrict');
+  renderOrders();
+  renderAddresses();
+  renderCartItems();
+  if (window._settings) {
+    document.getElementById('shopName').textContent = getLang() === 'en' ? (window._settings.shop_name_en || 'Lungi Ghar') : (window._settings.shop_name || 'লুঙ্গি ঘর');
+  }
+};
+
+loadAccount();
+updateCartUI();
+</script>
+</body>
+</html>

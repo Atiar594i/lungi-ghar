@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details - Lungi Ghar</title>
+  <link id="siteFavicon" rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/firebase-analytics.js"></script>
+</head>
+<body>
+<div class="top-bar">
+  <div class="container">
+    <span class="top-bar-item"><span id="iconPhoneTop"></span> <span data-i18n="hotline">হটলাইন</span>: <strong id="topPhone">01700000000</strong></span>
+    <div class="top-bar-right">
+      <div data-lang-switcher></div>
+    </div>
+  </div>
+</div>
+
+<header class="header">
+  <div class="container">
+    <div class="header-inner">
+      <a href="/" class="logo">
+        <div class="logo-mark" id="brandLogoMark"></div>
+        <div class="logo-text"><span id="shopName">লুঙ্গি ঘর</span><span data-i18n="brand_sub">বাংলাদেশ হ্যান্ডলুম কালেকশন</span></div>
+      </a>
+      <div class="search-bar">
+        <input type="text" id="searchInput" data-i18n-placeholder="search_placeholder" placeholder="সুতি, সিল্ক বা চেক লুঙ্গি খুঁজুন...">
+        <button type="button" onclick="doSearch()" id="searchBtn" aria-label="Search"></button>
+      </div>
+      <div class="header-actions">
+        <div id="authHeaderSlot"></div>
+        <a href="/track-order" class="action-btn">
+          <span class="icon" id="iconTrackHeader"></span>
+          <span class="label" data-i18n="track">ট্র্যাক</span>
+        </a>
+        <button type="button" class="action-btn" onclick="openCart()">
+          <span class="icon" id="iconCartHeader"></span>
+          <span class="label" data-i18n="cart">কার্ট</span>
+          <span class="badge" id="cartBadge" style="display:none">0</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav class="nav">
+  <div class="container">
+    <div class="nav-inner" id="mainNav">
+      <a href="/" class="nav-link" data-i18n="nav_home">হোম</a>
+      <a href="/?featured=1" class="nav-link" data-i18n="nav_bestseller">বেস্টসেলার</a>
+      <a href="/track-order" class="nav-link" data-i18n="nav_track">অর্ডার ট্র্যাক</a>
+    </div>
+  </div>
+</nav>
+
+<section class="section">
+  <div class="container">
+    <div id="breadcrumb" class="breadcrumb">
+      <a href="/" data-i18n="nav_home">হোম</a>
+      <span class="breadcrumb-sep">/</span>
+      <span id="breadCat"></span>
+      <span class="breadcrumb-sep">/</span>
+      <span id="breadName"></span>
+    </div>
+
+    <div id="productDetail" class="product-detail-grid">
+      <div class="spinner" style="grid-column:1/-1;"></div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div id="reviewsSection" style="margin-top:55px; background:white; border:1px solid var(--border); border-radius:16px; padding:32px; display:none;">
+      <div class="product-detail-grid">
+        <div>
+          <h2 class="section-title" style="margin-bottom:20px;" data-i18n="customer_reviews">গ্রাহক রিভিউ</h2>
+          <div id="reviewsList"></div>
+        </div>
+        <div style="background:var(--bg); border:1px solid var(--border); padding:24px; border-radius:12px;">
+          <h3 style="font-size:17px; margin-bottom:15px;" data-i18n="write_review">আপনার মতামত লিখুন</h3>
+          <div class="form-group">
+            <label class="form-label required" data-i18n="your_name">আপনার নাম</label>
+            <input class="form-control" id="revName" type="text">
+          </div>
+          <div class="form-group">
+            <label class="form-label required" data-i18n="rating">রেটিং</label>
+            <select class="form-control" id="revRating">
+              <option value="5">5 / 5 — Excellent</option>
+              <option value="4">4 / 5 — Very Good</option>
+              <option value="3">3 / 5 — Good</option>
+              <option value="2">2 / 5 — Fair</option>
+              <option value="1">1 / 5 — Poor</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label required" data-i18n="comment">মন্তব্য</label>
+            <textarea class="form-control" id="revComment" rows="3"></textarea>
+          </div>
+          <button type="button" class="btn btn-primary btn-full" onclick="submitReview()" data-i18n="submit_review">রিভিউ জমা দিন</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Related Products -->
+    <div style="margin-top:55px;">
+      <h2 class="section-title" style="margin-bottom:28px;" data-i18n="related_products">আরও পছন্দ হতে পারে</h2>
+      <div class="products-grid" id="relatedProducts"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Cart Sidebar -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h3><span id="iconCartTitle"></span> <span data-i18n="cart_title">শপিং কার্ট</span></h3>
+    <button type="button" class="cart-close" onclick="closeCart()" id="iconCartClose"></button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer" id="cartFooter" style="display:none">
+    <div class="cart-summary">
+      <div class="cart-row"><span data-i18n="subtotal">সাবটোটাল</span><span id="cartSubtotal">৳০</span></div>
+      <div class="cart-row total"><span data-i18n="total">সর্বমোট</span><span id="cartTotal">৳০</span></div>
+    </div>
+    <button type="button" class="btn btn-primary btn-full btn-lg" onclick="goToCheckout()">
+      <span data-i18n="checkout_btn">চেকআউট করুন</span> <span id="iconCheckoutArrow"></span>
+    </button>
+  </div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="sticky-buy" id="stickyBuy">
+  <div style="display:flex; gap:10px; max-width:600px; margin:0 auto;">
+    <button type="button" class="btn btn-outline btn-full" onclick="addSelectedToCart()" data-i18n="add_to_cart">কার্টে যোগ করুন</button>
+    <button type="button" class="btn btn-primary btn-full" onclick="buyNow()" data-i18n="buy_now">এখনই অর্ডার করুন</button>
+  </div>
+</div>
+
+<script src="/js/icons.js"></script>
+<script src="/js/i18n.js"></script>
+<script src="/js/cart.js"></script>
+<script>
+let currentProduct = null;
+let relatedList = [];
+let reviewsList = [];
+let categoriesCache = [];
+let settingsCache = {};
+let currentSlug = decodeURIComponent(window.location.pathname.split('/product/')[1] || '');
+
+document.getElementById('brandLogoMark').innerHTML = svgIcon('layers', 20);
+document.getElementById('iconPhoneTop').innerHTML = svgIcon('phone', 13);
+document.getElementById('searchBtn').innerHTML = svgIcon('search', 17);
+document.getElementById('iconTrackHeader').innerHTML = svgIcon('package', 18);
+document.getElementById('iconCartHeader').innerHTML = svgIcon('cart', 18);
+document.getElementById('iconCartTitle').innerHTML = svgIcon('cart', 19);
+document.getElementById('iconCartClose').innerHTML = svgIcon('x', 16);
+document.getElementById('iconCheckoutArrow').innerHTML = svgIcon('arrowRight', 16);
+
+function doSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (q) window.location.href = `/?search=${encodeURIComponent(q)}`;
+}
+document.getElementById('searchInput').addEventListener('keypress', e => {
+  if (e.key === 'Enter') doSearch();
+});
+
+function renderNav() {
+  const nav = document.getElementById('mainNav');
+  const catLinks = categoriesCache.map(c =>
+    `<a href="/?category=${encodeURIComponent(c.slug)}" class="nav-link">${escapeHtml(localizeField(c, 'name'))}</a>`
+  ).join('');
+  nav.innerHTML = `<a href="/" class="nav-link">${t('nav_home')}</a>${catLinks}<a href="/?featured=1" class="nav-link">${t('nav_bestseller')}</a><a href="/track-order" class="nav-link">${t('nav_track')}</a>`;
+}
+
+fetch('/api/categories').then(r => r.json()).then(data => {
+  if (data.success && data.categories.length) {
+    categoriesCache = data.categories;
+    renderNav();
+  }
+});
+
+async function loadProduct() {
+  if (!currentSlug) return;
+  const data = await fetch(`/api/products/${encodeURIComponent(currentSlug)}`).then(r => r.json());
+  if (!data.success) {
+    document.getElementById('productDetail').innerHTML = '<p style="color:var(--text-light);text-align:center;grid-column:1/-1;padding:40px;">Product not found</p>';
+    return;
+  }
+
+  currentProduct = data.product;
+  relatedList = data.related || [];
+  reviewsList = data.reviews || [];
+
+  window.selectedColor = (currentProduct.colors && currentProduct.colors[0]) || '';
+  window.selectedSize = (currentProduct.sizes && currentProduct.sizes[0]) || 'ফ্রি সাইজ (৫.৫ হাত)';
+  window.selectedQty = 1;
+
+  renderProductView();
+}
+
+function renderProductView() {
+  if (!currentProduct) return;
+  const p = currentProduct;
+  const outOfStock = p.stock <= 0;
+  const displayName = localizeField(p, 'name');
+  const displayDesc = localizeField(p, 'description');
+  const displayCat = getLang() === 'en' ? (p.category_name_en || p.category_name || '') : (p.category_name || '');
+
+  document.title = `${displayName} — ${getLang() === 'en' ? (settingsCache.shop_name_en || 'Lungi Ghar') : (settingsCache.shop_name || 'লুঙ্গি ঘর')}`;
+  document.getElementById('breadCat').textContent = displayCat;
+  document.getElementById('breadName').textContent = displayName;
+
+  const price = p.sale_price || p.price;
+  const hasDiscount = p.sale_price && p.sale_price < p.price;
+  const discount = hasDiscount ? Math.round((1 - p.sale_price / p.price) * 100) : 0;
+  const images = p.images && p.images.length > 0 ? p.images : ['/img/no-image.svg'];
+
+  document.getElementById('productDetail').innerHTML = `
+    <div>
+      <div style="border-radius:14px; overflow:hidden; height:460px; background:#f4f3ef; border:1px solid var(--border); margin-bottom:14px;">
+        <img id="mainImage" src="${escapeHtml(images[0])}" alt="${escapeHtml(displayName)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='/img/no-image.svg'">
+      </div>
+      <div style="display:flex; gap:10px; overflow-x:auto;">
+        ${images.map((img, i) => `
+          <img src="${escapeHtml(img)}" onclick="changeImage(${i})"
+            style="width:72px;height:72px;border-radius:8px;object-fit:cover;cursor:pointer;border:2px solid ${i === 0 ? 'var(--primary)' : 'var(--border)'};"
+            onerror="this.src='/img/no-image.svg'" id="thumb_${i}">
+        `).join('')}
+      </div>
+    </div>
+
+    <div>
+      <div style="color:var(--gold); font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">${escapeHtml(displayCat)}</div>
+      <h1 style="font-family:'Playfair Display','Hind Siliguri',serif; font-size:30px; font-weight:700; color:var(--dark); margin-bottom:14px; line-height:1.25;">${escapeHtml(displayName)}</h1>
+
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px; color:var(--gold); font-size:13.5px;">
+        ${svgIcon('starFilled', 15)} ${svgIcon('starFilled', 15)} ${svgIcon('starFilled', 15)} ${svgIcon('starFilled', 15)} ${svgIcon('starFilled', 15)}
+        <span style="color:var(--text-light);">(${reviewsList.length} ${t('reviews_label')})</span>
+        <span style="color:var(--border-strong);">|</span>
+        <span style="color:var(--text-light);">${t('sold_count', { n: p.total_sold || 0 })}</span>
+      </div>
+
+      <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:22px; padding:16px 20px; background:var(--primary-soft); border:1px solid #cce3d8; border-radius:10px; flex-wrap:wrap;">
+        <span style="font-size:30px; font-weight:700; color:var(--primary);">${formatPrice(price)}</span>
+        ${hasDiscount ? `
+          <span style="font-size:17px; color:var(--text-light); text-decoration:line-through;">${formatPrice(p.price)}</span>
+          <span style="background:#b91c1c; color:white; padding:3px 10px; border-radius:6px; font-size:12px; font-weight:600;">${t('badge_discount', { pct: discount })}</span>
+        ` : ''}
+      </div>
+
+      ${displayDesc ? `<p style="color:var(--text); line-height:1.8; margin-bottom:22px; font-size:15px;">${escapeHtml(displayDesc)}</p>` : ''}
+
+      ${p.colors && p.colors.length > 0 ? `
+      <div style="margin-bottom:20px;">
+        <label style="font-weight:600; font-size:13.5px; display:block; margin-bottom:8px; color:var(--dark);">${t('select_color')}:</label>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;" id="colorOptions">
+          ${p.colors.map(c => {
+            const active = window.selectedColor === c;
+            return `<button type="button" onclick="selectColor(this, ${JSON.stringify(c).replace(/"/g, '&quot;')})"
+              style="padding:8px 16px; border:1.5px solid ${active ? 'var(--primary)' : 'var(--border-strong)'}; border-radius:8px; cursor:pointer; background:${active ? 'var(--primary-soft)' : 'white'}; font-size:13.5px; font-weight:600; color:var(--dark);">
+              ${escapeHtml(translateAttr(c))}
+            </button>`;
+          }).join('')}
+        </div>
+      </div>` : ''}
+
+      ${p.sizes && p.sizes.length > 0 ? `
+      <div style="margin-bottom:22px;">
+        <label style="font-weight:600; font-size:13.5px; display:block; margin-bottom:8px; color:var(--dark);">${t('select_size')}:</label>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;" id="sizeOptions">
+          ${p.sizes.map(s => {
+            const active = window.selectedSize === s;
+            return `<button type="button" onclick="selectSize(this, ${JSON.stringify(s).replace(/"/g, '&quot;')})"
+              style="padding:8px 16px; border:1.5px solid ${active ? 'var(--primary)' : 'var(--border-strong)'}; border-radius:8px; cursor:pointer; background:${active ? 'var(--primary-soft)' : 'white'}; font-size:13.5px; font-weight:600; color:var(--dark);">
+              ${escapeHtml(translateAttr(s))}
+            </button>`;
+          }).join('')}
+        </div>
+      </div>` : ''}
+
+      <div style="margin-bottom:24px;">
+        <label style="font-weight:600; font-size:13.5px; display:block; margin-bottom:8px; color:var(--dark);">${t('quantity')}:</label>
+        <div style="display:flex; align-items:center; gap:15px;">
+          <div style="display:flex; align-items:center; gap:10px; border:1px solid var(--border-strong); border-radius:8px; padding:4px 8px; background:white;">
+            <button type="button" onclick="changeQty(-1)" style="width:32px;height:32px;border:none;background:transparent;cursor:pointer;font-size:18px;">−</button>
+            <span id="qtyDisplay" style="font-size:16px; font-weight:700; min-width:28px; text-align:center;">${window.selectedQty}</span>
+            <button type="button" onclick="changeQty(1)" style="width:32px;height:32px;border:none;background:transparent;cursor:pointer;font-size:18px;">+</button>
+          </div>
+          <span style="color:var(--text-light); font-size:13px;">${p.stock > 0 ? t('in_stock', { n: p.stock }) : `<span style="color:#b91c1c;font-weight:600;">${t('out_of_stock')}</span>`}</span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
+        <button type="button" class="btn btn-primary btn-lg" ${outOfStock ? 'disabled' : ''} onclick="buyNow()">
+          ${svgIcon('creditCard', 17)} ${outOfStock ? t('out_of_stock') : t('buy_now')}
+        </button>
+        <button type="button" class="btn btn-outline btn-lg" ${outOfStock ? 'disabled' : ''} onclick="addSelectedToCart()">
+          ${svgIcon('cart', 17)} ${t('add_to_cart')}
+        </button>
+      </div>
+
+      <div style="background:white; border:1px solid var(--border); border-radius:10px; padding:18px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:13px; color:var(--text);">
+          <div style="display:flex; gap:8px; align-items:center;">${svgIcon('shield', 16)} <span>${t('care_1')}</span></div>
+          <div style="display:flex; gap:8px; align-items:center;">${svgIcon('checkCircle', 16)} <span>${t('care_2')}</span></div>
+          <div style="display:flex; gap:8px; align-items:center;">${svgIcon('sparkles', 16)} <span>${t('care_3')}</span></div>
+          <div style="display:flex; gap:8px; align-items:center;">${svgIcon('refresh', 16)} <span>${t('care_4')}</span></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  renderReviews();
+  document.getElementById('reviewsSection').style.display = 'block';
+  renderRelated();
+
+  if (!outOfStock) {
+    window.onscroll = () => {
+      const btn = document.getElementById('stickyBuy');
+      btn.style.display = window.scrollY > 520 ? 'block' : 'none';
+    };
+  }
+}
+
+function renderRelated() {
+  if (relatedList.length === 0) return;
+  document.getElementById('relatedProducts').innerHTML = relatedList.map(rp => {
+    const rImg = rp.images && rp.images.length > 0 ? rp.images[0] : '/img/no-image.svg';
+    const rPrice = rp.sale_price || rp.price;
+    const rName = localizeField(rp, 'name');
+    return `
+      <div class="product-card" onclick="window.location.href='/product/${encodeURIComponent(rp.slug)}'">
+        <div class="product-card-img">
+          <img src="${escapeHtml(rImg)}" alt="${escapeHtml(rName)}" onerror="this.src='/img/no-image.svg'">
+        </div>
+        <div class="product-card-body">
+          <div class="product-name">${escapeHtml(rName)}</div>
+          <div class="product-price"><span class="current">${formatPrice(rPrice)}</span></div>
+        </div>
+        <div class="product-card-footer">
+          <button type="button" class="add-to-cart-btn" onclick="event.stopPropagation(); addToCart(${rp.id}, ${JSON.stringify(rp.name).replace(/"/g, '&quot;')}, ${rPrice}, ${JSON.stringify(rImg).replace(/"/g, '&quot;')}, '', 'ফ্রি সাইজ (৫.৫ হাত)', 1, true, ${JSON.stringify(rp.name_en || rp.name).replace(/"/g, '&quot;')})">
+            ${svgIcon('cart', 15)} ${t('add_to_cart')}
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderReviews() {
+  const list = document.getElementById('reviewsList');
+  if (!reviewsList || reviewsList.length === 0) {
+    list.innerHTML = `<p style="color:var(--text-light);">${t('no_reviews')}</p>`;
+    return;
+  }
+  list.innerHTML = reviewsList.map(r => `
+    <div style="padding:14px 0; border-bottom:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+        <strong>${escapeHtml(r.customer_name)}</strong>
+        <span style="color:var(--gold); display:inline-flex; gap:2px;">${svgIcon('starFilled', 13).repeat(r.rating)}</span>
+      </div>
+      <p style="font-size:14px; color:var(--text);">${escapeHtml(r.comment)}</p>
+    </div>
+  `).join('');
+}
+
+async function submitReview() {
+  const customer_name = document.getElementById('revName').value.trim();
+  const rating = document.getElementById('revRating').value;
+  const comment = document.getElementById('revComment').value.trim();
+  if (!customer_name || !comment) {
+    showToast(getLang() === 'en' ? 'Please fill in your name and comment' : 'নাম এবং মন্তব্য লিখুন', 'error');
+    return;
+  }
+  const res = await fetch(`/api/products/${encodeURIComponent(currentSlug)}/reviews`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ customer_name, rating, comment })
+  }).then(r => r.json());
+
+  if (res.success) {
+    showToast(getLang() === 'en' ? 'Thank you for your review' : res.message, 'success');
+    document.getElementById('revName').value = '';
+    document.getElementById('revComment').value = '';
+    loadProduct();
+  } else {
+    showToast(res.message || 'Error', 'error');
+  }
+}
+
+function changeImage(index) {
+  const p = currentProduct;
+  if (!p || !p.images) return;
+  document.getElementById('mainImage').src = p.images[index];
+  document.querySelectorAll('[id^="thumb_"]').forEach((t, i) => {
+    t.style.border = `2px solid ${i === index ? 'var(--primary)' : 'var(--border)'}`;
+  });
+}
+
+function selectColor(btn, color) {
+  window.selectedColor = color;
+  document.querySelectorAll('#colorOptions button').forEach(b => {
+    b.style.borderColor = 'var(--border-strong)';
+    b.style.background = 'white';
+  });
+  btn.style.borderColor = 'var(--primary)';
+  btn.style.background = 'var(--primary-soft)';
+}
+
+function selectSize(btn, size) {
+  window.selectedSize = size;
+  document.querySelectorAll('#sizeOptions button').forEach(b => {
+    b.style.borderColor = 'var(--border-strong)';
+    b.style.background = 'white';
+  });
+  btn.style.borderColor = 'var(--primary)';
+  btn.style.background = 'var(--primary-soft)';
+}
+
+function changeQty(delta) {
+  const maxStock = currentProduct ? currentProduct.stock : 99;
+  window.selectedQty = Math.min(Math.max(1, maxStock), Math.max(1, (window.selectedQty || 1) + delta));
+  document.getElementById('qtyDisplay').textContent = window.selectedQty;
+}
+
+function addSelectedToCart(openDrawer = true) {
+  if (!currentProduct || currentProduct.stock <= 0) return;
+  const p = currentProduct;
+  const img = p.images && p.images.length > 0 ? p.images[0] : '/img/no-image.svg';
+  const price = p.sale_price || p.price;
+  addToCart(p.id, p.name, price, img, window.selectedColor, window.selectedSize, window.selectedQty || 1, openDrawer, p.name_en || p.name);
+}
+
+async function buyNow() {
+  if (!currentProduct || currentProduct.stock <= 0) return;
+  addSelectedToCart(false);
+  const ok = await ensureLoggedIn('/checkout');
+  if (ok) {
+    window.location.href = '/checkout';
+  }
+}
+
+function applyShopInfo() {
+  const isEn = getLang() === 'en';
+  document.getElementById('shopName').textContent = isEn ? (settingsCache.shop_name_en || 'Lungi Ghar') : (settingsCache.shop_name || 'লুঙ্গি ঘর');
+  document.getElementById('topPhone').textContent = settingsCache.shop_phone || '01700000000';
+}
+
+fetch('/api/settings').then(r => r.json()).then(data => {
+  if (data.success) {
+    settingsCache = data.settings;
+    applyShopInfo();
+  }
+});
+
+window.onLanguageChange = function () {
+  applyShopInfo();
+  renderNav();
+  renderProductView();
+  renderCartItems();
+  renderAuthHeader();
+};
+
+initAuthHeader().then(u => {
+  if (u && document.getElementById('revName')) document.getElementById('revName').value = u.name;
+});
+loadProduct();
+updateCartUI();
+</script>
+</body>
+</html>

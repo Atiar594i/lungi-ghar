@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout - Lungi Ghar</title>
+  <link id="siteFavicon" rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/firebase-analytics.js"></script>
+  <style>
+    .checkout-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 28px; }
+    .checkout-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 26px; margin-bottom: 20px; }
+    .checkout-card h3 { font-size: 17px; font-weight: 700; color: var(--dark); margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 9px; }
+    .order-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .order-item img { width: 58px; height: 58px; border-radius: 8px; object-fit: cover; background: #f4f3ef; border: 1px solid var(--border); }
+    .order-item-info { flex: 1; }
+    .order-item-name { font-weight: 600; font-size: 14px; color: var(--dark); }
+    .order-item-meta { font-size: 12px; color: var(--text-light); }
+    .summary-row { display: flex; justify-content: space-between; padding: 7px 0; font-size: 14px; color: var(--text-light); }
+    .summary-row.total { font-size: 18px; font-weight: 700; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 6px; color: var(--primary); }
+    .bkash-info { background: #fdf2f8; border: 1px solid #fbcfe8; border-radius: 10px; padding: 14px 16px; margin-top: 12px; font-size: 13.5px; color: #9d174d; }
+    .cod-info { background: #ecfdf5; border: 1px solid #bbf7d0; border-radius: 10px; padding: 14px 16px; margin-top: 12px; font-size: 13.5px; color: #065f46; }
+    .payment-banner { padding: 14px 18px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; display: none; }
+    .payment-banner.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; display: block; }
+    @media (max-width: 768px) { .checkout-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="top-bar">
+  <div class="container">
+    <span class="top-bar-item"><span id="iconLockTop"></span> <span data-i18n="secure_checkout_note">এনক্রিপ্টেড ও নিরাপদ অর্ডার সিস্টেম</span></span>
+    <div class="top-bar-right"><div data-lang-switcher></div></div>
+  </div>
+</div>
+
+<header class="header">
+  <div class="container">
+    <div class="header-inner">
+      <a href="/" class="logo">
+        <div class="logo-mark" id="brandLogoMark"></div>
+        <div class="logo-text"><span id="shopName">লুঙ্গি ঘর</span><span data-i18n="checkout_title">নিরাপদ চেকআউট</span></div>
+      </a>
+      <div class="header-actions" style="margin-left:auto;">
+        <div id="authHeaderSlot"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="section">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="/" data-i18n="nav_home">হোম</a>
+      <span class="breadcrumb-sep">/</span>
+      <span data-i18n="checkout_title">চেকআউট</span>
+    </div>
+
+    <div id="paymentNotice" class="payment-banner"></div>
+    <h1 class="section-title" style="margin-bottom:26px;" data-i18n="checkout_title">নিরাপদ চেকআউট</h1>
+
+    <div class="checkout-grid">
+      <div>
+        <div class="checkout-card">
+          <h3><span id="iconPinHead"></span> <span data-i18n="delivery_info">ডেলিভারি ঠিকানা</span></h3>
+
+          <!-- Saved Address Book Selector -->
+          <div id="savedAddressSelectorBox" style="display:none; margin-bottom:16px; padding:12px 14px; background:var(--bg); border-radius:var(--radius-sm); border:1px solid var(--border);">
+            <label class="form-label" style="display:flex; align-items:center; gap:6px; font-weight:700; margin-bottom:8px; font-size:13px;">
+              <span id="iconSavedAddr"></span> <span data-i18n="select_saved_address">সংরক্ষিত ঠিকানা থেকে বাছুন</span>
+            </label>
+            <select class="form-control" id="savedAddressSelect" onchange="applySavedAddress(this.value)"></select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required" data-i18n="full_name">পূর্ণ নাম</label>
+              <input class="form-control" id="custName" type="text">
+            </div>
+            <div class="form-group">
+              <label class="form-label required" data-i18n="phone_number">মোবাইল নম্বর</label>
+              <input class="form-control" id="custPhone" type="tel" placeholder="01XXXXXXXXX">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="email_optional">ইমেইল (ঐচ্ছিক)</label>
+            <input class="form-control" id="custEmail" type="email" placeholder="email@example.com">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required" data-i18n="district">জেলা (৬৪ জেলা)</label>
+              <select class="form-control" id="district" onchange="updateShipping()"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="thana">উপজেলা / থানা</label>
+              <input class="form-control" id="thana" type="text">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label required" data-i18n="full_address">বিস্তারিত ঠিকানা</label>
+            <textarea class="form-control" id="address" rows="3" data-i18n-placeholder="address_placeholder"></textarea>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" data-i18n="order_notes">বিশেষ নির্দেশনা (ঐচ্ছিক)</label>
+            <input class="form-control" id="notes" type="text">
+          </div>
+        </div>
+
+        <div class="checkout-card">
+          <h3><span id="iconPayHead"></span> <span data-i18n="payment_method">পেমেন্ট পদ্ধতি</span></h3>
+          <div class="payment-options">
+            <label class="payment-option" id="payBkash" onclick="selectPayment('bkash')">
+              <div class="payment-icon-box bkash" id="iconBkashPay"></div>
+              <div class="payment-info">
+                <div class="payment-name" data-i18n="bkash_auto">বিকাশ (অটোমেটিক পেমেন্ট)</div>
+                <div class="payment-desc" data-i18n="bkash_desc">বিকাশ গেটওয়ের মাধ্যমে তাৎক্ষণিক পেমেন্ট ও অর্ডার কনফার্ম করুন</div>
+              </div>
+              <div class="payment-check" id="checkBkash"></div>
+            </label>
+            <label class="payment-option selected" id="payCod" onclick="selectPayment('cod')">
+              <div class="payment-icon-box cod" id="iconCodPay"></div>
+              <div class="payment-info">
+                <div class="payment-name" data-i18n="cod_title">ক্যাশ অন ডেলিভারি (COD)</div>
+                <div class="payment-desc" data-i18n="cod_desc">পণ্য হাতে পেয়ে ডেলিভারিম্যানকে নগদ পরিশোধ করুন</div>
+              </div>
+              <div class="payment-check" id="checkCod"></div>
+            </label>
+          </div>
+
+          <div id="bkashInfo" class="bkash-info" style="display:none;" data-i18n="bkash_note"></div>
+          <div id="codInfo" class="cod-info" data-i18n="cod_note"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="checkout-card" style="position:sticky;top:85px;">
+          <h3><span id="iconSummaryHead"></span> <span data-i18n="order_summary">অর্ডার সামারি</span></h3>
+          <div id="orderItems"></div>
+
+          <!-- Promo Code Box -->
+          <div style="margin: 14px 0; padding: 12px; background: #f8fafc; border: 1px dashed var(--border); border-radius: 8px;">
+            <div style="display:flex; gap:8px;">
+              <input type="text" class="form-control" id="couponCodeInput" data-i18n-placeholder="coupon_placeholder" placeholder="কুপন কোড (যেমন: LUNGI10)" style="text-transform:uppercase; font-size:13px;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="applyPromoCode()" id="btnApplyCoupon" data-i18n="apply_coupon">প্রয়োগ</button>
+            </div>
+            <div id="couponMsg" style="display:none; font-size:12px; margin-top:6px;"></div>
+          </div>
+
+          <div style="margin-top:15px;">
+            <div class="summary-row"><span data-i18n="subtotal">সাবটোটাল</span><span id="summarySubtotal">৳০</span></div>
+            <div class="summary-row" id="discountRow" style="display:none; color:#15803d; font-weight:600;">
+              <span><span data-i18n="discount">ডিসকাউন্ট</span> (<span id="discountCodeLbl"></span>)</span>
+              <span id="summaryDiscount">-৳০</span>
+            </div>
+            <div class="summary-row"><span data-i18n="shipping_charge">ডেলিভারি চার্জ</span><span id="summaryShipping">—</span></div>
+            <div class="summary-row" id="freeShipRow" style="display:none; color:var(--primary); font-weight:600;">
+              <span data-i18n="free_shipping_applied">ফ্রি ডেলিভারি প্রযোজ্য</span><span data-i18n="free">ফ্রি</span>
+            </div>
+            <div class="summary-row total"><span data-i18n="total">সর্বমোট</span><span id="summaryTotal">৳০</span></div>
+          </div>
+
+          <button type="button" id="placeOrderBtn" class="btn btn-primary btn-full btn-lg" onclick="placeOrder()" style="margin-top:20px;">
+            <span id="iconCheckBtn"></span> <span data-i18n="confirm_order">অর্ডার নিশ্চিত করুন</span>
+          </button>
+          <div style="text-align:center; margin-top:12px; font-size:12px; color:var(--text-light); display:flex; align-items:center; justify-content:center; gap:6px;">
+            <span id="iconSafeNote"></span> <span data-i18n="secure_checkout_note">এনক্রিপ্টেড ও নিরাপদ অর্ডার সিস্টেম</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<div id="loadingOverlay" style="position:fixed; inset:0; background:rgba(15,23,42,0.68); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; gap:18px;">
+  <div class="spinner" style="width:52px;height:52px;border-width:4px;border-color:rgba(255,255,255,0.25);border-top-color:white;"></div>
+  <p style="color:white; font-size:17px; font-weight:600;" id="loadingText">Processing...</p>
+</div>
+
+<script src="/js/icons.js"></script>
+<script src="/js/i18n.js"></script>
+<script src="/js/cart.js"></script>
+<script>
+let settings = {};
+let selectedPayment = 'cod';
+let shippingCost = 0;
+let appliedCouponCode = '';
+let appliedDiscount = 0;
+let userSavedAddresses = [];
+
+document.getElementById('brandLogoMark').innerHTML = svgIcon('layers', 20);
+document.getElementById('iconLockTop').innerHTML = svgIcon('lock', 13);
+document.getElementById('iconPinHead').innerHTML = svgIcon('mapPin', 18);
+document.getElementById('iconSavedAddr').innerHTML = svgIcon('mapPin', 15);
+document.getElementById('iconPayHead').innerHTML = svgIcon('creditCard', 18);
+document.getElementById('iconBkashPay').innerHTML = svgIcon('creditCard', 20);
+document.getElementById('iconCodPay').innerHTML = svgIcon('wallet', 20);
+document.getElementById('checkBkash').innerHTML = svgIcon('check', 13);
+document.getElementById('checkCod').innerHTML = svgIcon('check', 13);
+document.getElementById('iconSummaryHead').innerHTML = svgIcon('bag', 18);
+document.getElementById('iconCheckBtn').innerHTML = svgIcon('checkCircle', 17);
+document.getElementById('iconSafeNote').innerHTML = svgIcon('shield', 14);
+
+function populateDistricts(selectedVal = '') {
+  const sel = document.getElementById('district');
+  const prev = selectedVal || sel.value;
+  sel.innerHTML = `<option value="">${t('select_district')}</option>` +
+    getDistrictList().map(d => `<option value="${escapeHtml(d.value)}" ${prev === d.value ? 'selected' : ''}>${escapeHtml(d.label)}</option>`).join('');
+}
+
+const pageParams = new URLSearchParams(window.location.search);
+const payParam = pageParams.get('payment');
+const failedOrder = pageParams.get('order');
+
+function renderPaymentNotice() {
+  if (payParam !== 'cancelled' && payParam !== 'failed') return;
+  const banner = document.getElementById('paymentNotice');
+  banner.className = 'payment-banner error';
+  const isEn = getLang() === 'en';
+  banner.innerHTML = payParam === 'cancelled'
+    ? (isEn ? `bKash payment was cancelled${failedOrder ? ` (Order: <strong>${escapeHtml(failedOrder)}</strong>)` : ''}. Retry below or switch to COD.` : `বিকাশ পেমেন্ট বাতিল করা হয়েছে${failedOrder ? ` (অর্ডার: <strong>${escapeHtml(failedOrder)}</strong>)` : ''}। আবার চেষ্টা করুন অথবা ক্যাশ অন ডেলিভারি বেছে নিন।`)
+    : (isEn ? `bKash payment did not complete${failedOrder ? ` (Order: <strong>${escapeHtml(failedOrder)}</strong>)` : ''}. Please retry.` : `বিকাশ পেমেন্ট সম্পন্ন হয়নি${failedOrder ? ` (অর্ডার: <strong>${escapeHtml(failedOrder)}</strong>)` : ''}। অনুগ্রহ করে আবার চেষ্টা করুন।`);
+  if (failedOrder) {
+    banner.innerHTML += ` <button type="button" class="btn btn-sm btn-primary" style="margin-left:10px;" onclick="retryBkash('${escapeHtml(failedOrder)}')">${isEn ? 'Retry bKash' : 'আবার বিকাশ পেমেন্ট করুন'}</button>`;
+  }
+}
+
+async function retryBkash(orderNumber) {
+  document.getElementById('loadingOverlay').style.display = 'flex';
+  document.getElementById('loadingText').textContent = getLang() === 'en' ? 'Redirecting to bKash...' : 'বিকাশ পেমেন্ট গেটওয়েতে নেওয়া হচ্ছে...';
+  const res = await fetch('/bkash/create-payment', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ order_number: orderNumber })
+  }).then(r => r.json());
+  if (res.success && res.bkashURL) {
+    window.location.href = res.bkashURL;
+  } else {
+    document.getElementById('loadingOverlay').style.display = 'none';
+    showToast(res.message || 'Error', 'error');
+  }
+}
+
+function applyPaymentMethodsVisibility() {
+  const bkashAvailable = settings.bkash_enabled !== '0';
+  const codAvailable = settings.cod_enabled !== '0';
+
+  const bkashEl = document.getElementById('payBkash');
+  const codEl = document.getElementById('payCod');
+
+  if (bkashEl) bkashEl.style.display = bkashAvailable ? 'flex' : 'none';
+  if (codEl) codEl.style.display = codAvailable ? 'flex' : 'none';
+
+  if (!bkashAvailable && selectedPayment === 'bkash') {
+    selectPayment('cod');
+  } else if (!codAvailable && selectedPayment === 'cod') {
+    selectPayment('bkash');
+  }
+}
+
+fetch('/api/settings').then(r => r.json()).then(data => {
+  if (data.success) {
+    settings = data.settings;
+    document.getElementById('shopName').textContent = getLang() === 'en' ? (settings.shop_name_en || 'Lungi Ghar') : (settings.shop_name || 'লুঙ্গি ঘর');
+    applyPaymentMethodsVisibility();
+    updateShipping();
+  }
+});
+
+function selectPayment(method) {
+  selectedPayment = method;
+  document.getElementById('payBkash').classList.toggle('selected', method === 'bkash');
+  document.getElementById('payCod').classList.toggle('selected', method === 'cod');
+  document.getElementById('bkashInfo').style.display = method === 'bkash' ? 'block' : 'none';
+  document.getElementById('codInfo').style.display = method === 'cod' ? 'block' : 'none';
+}
+
+function updateShipping() {
+  const district = document.getElementById('district').value;
+  const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  const freeAbove = parseFloat(settings.free_shipping_above || 1500);
+
+  if (freeAbove > 0 && subtotal >= freeAbove) {
+    shippingCost = 0;
+    document.getElementById('summaryShipping').textContent = t('free');
+    document.getElementById('freeShipRow').style.display = 'flex';
+  } else if (district === 'ঢাকা') {
+    shippingCost = parseFloat(settings.shipping_inside_dhaka || 60);
+    document.getElementById('summaryShipping').textContent = formatPrice(shippingCost);
+    document.getElementById('freeShipRow').style.display = 'none';
+  } else if (district) {
+    shippingCost = parseFloat(settings.shipping_outside_dhaka || 120);
+    document.getElementById('summaryShipping').textContent = formatPrice(shippingCost);
+    document.getElementById('freeShipRow').style.display = 'none';
+  } else {
+    document.getElementById('summaryShipping').textContent = t('select_district');
+    shippingCost = 0;
+    document.getElementById('freeShipRow').style.display = 'none';
+  }
+  updateTotal();
+}
+
+function updateTotal() {
+  const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  const total = Math.max(0, subtotal - appliedDiscount) + shippingCost;
+  document.getElementById('summarySubtotal').textContent = formatPrice(subtotal);
+
+  const discRow = document.getElementById('discountRow');
+  if (appliedDiscount > 0) {
+    discRow.style.display = 'flex';
+    document.getElementById('discountCodeLbl').textContent = appliedCouponCode;
+    document.getElementById('summaryDiscount').textContent = `-${formatPrice(appliedDiscount)}`;
+  } else {
+    discRow.style.display = 'none';
+  }
+
+  document.getElementById('summaryTotal').textContent = formatPrice(total);
+}
+
+async function applyPromoCode() {
+  const code = (document.getElementById('couponCodeInput').value || '').trim();
+  const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  const msgEl = document.getElementById('couponMsg');
+  const isEn = getLang() === 'en';
+
+  if (!code) {
+    msgEl.style.display = 'block';
+    msgEl.style.color = '#dc2626';
+    msgEl.textContent = isEn ? 'Please enter a coupon code' : 'কুপন কোড লিখুন';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/coupons/apply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, subtotal })
+    }).then(r => r.json());
+
+    msgEl.style.display = 'block';
+    if (res.success) {
+      appliedCouponCode = res.code;
+      appliedDiscount = res.discount;
+      msgEl.style.color = '#15803d';
+      msgEl.textContent = isEn ? `Coupon "${res.code}" applied! You saved ${formatPrice(res.discount)}` : `কুপন "${res.code}" সফলভাবে প্রয়োগ হয়েছে! আপনি ${formatPrice(res.discount)} ডিসকাউন্ট পেয়েছেন।`;
+      updateTotal();
+    } else {
+      appliedCouponCode = '';
+      appliedDiscount = 0;
+      msgEl.style.color = '#dc2626';
+      msgEl.textContent = res.message || (isEn ? 'Invalid coupon code' : 'অবৈধ কুপন কোড');
+      updateTotal();
+    }
+  } catch {
+    msgEl.style.display = 'block';
+    msgEl.style.color = '#dc2626';
+    msgEl.textContent = isEn ? 'Error verifying coupon' : 'কুপন যাচাই করতে সমস্যা হয়েছে';
+  }
+}
+
+function applySavedAddress(id) {
+  if (!id) return;
+  const a = userSavedAddresses.find(x => String(x.id) === String(id));
+  if (!a) return;
+  if (a.recipient_name) document.getElementById('custName').value = a.recipient_name;
+  if (a.recipient_phone) document.getElementById('custPhone').value = a.recipient_phone;
+  if (a.address) document.getElementById('address').value = a.address;
+  if (a.thana) document.getElementById('thana').value = a.thana;
+  if (a.district) {
+    populateDistricts(a.district);
+    updateShipping();
+  }
+}
+
+function renderOrderItems() {
+  if (cart.length === 0) {
+    if (!failedOrder) {
+      window.location.href = '/';
+      return;
+    }
+    document.getElementById('orderItems').innerHTML = `<p style="color:var(--text-light);font-size:14px;">${t('cart_empty_t')}</p>`;
+    return;
+  }
+  const isEn = getLang() === 'en';
+  document.getElementById('orderItems').innerHTML = cart.map(item => {
+    const title = isEn && item.name_en ? item.name_en : item.name;
+    return `
+      <div class="order-item">
+        <img src="${escapeHtml(item.image)}" alt="${escapeHtml(title)}" onerror="this.src='/img/no-image.svg'">
+        <div class="order-item-info">
+          <div class="order-item-name">${escapeHtml(title)}</div>
+          <div class="order-item-meta">${item.color ? escapeHtml(translateAttr(item.color)) + ' · ' : ''}${escapeHtml(translateAttr(item.size))} · ×${item.quantity}</div>
+        </div>
+        <div style="font-weight:700; font-size:14px; color:var(--primary);">${formatPrice(item.price * item.quantity)}</div>
+      </div>
+    `;
+  }).join('');
+  updateTotal();
+}
+
+function normalizePhone(raw) {
+  let cleaned = String(raw || '').replace(/[\s-]/g, '');
+  if (cleaned.startsWith('+880')) cleaned = '0' + cleaned.slice(4);
+  else if (cleaned.startsWith('880')) cleaned = '0' + cleaned.slice(3);
+  return cleaned;
+}
+
+async function placeOrder() {
+  const name = document.getElementById('custName').value.trim();
+  const phone = normalizePhone(document.getElementById('custPhone').value);
+  const address = document.getElementById('address').value.trim();
+  const district = document.getElementById('district').value;
+  const thana = document.getElementById('thana').value.trim();
+  const email = document.getElementById('custEmail').value.trim();
+  const notes = document.getElementById('notes').value.trim();
+  const isEn = getLang() === 'en';
+
+  if (!name) { showToast(isEn ? 'Enter full name' : 'নাম পূরণ করুন', 'error'); return; }
+  if (!phone || !/^01[3-9]\d{8}$/.test(phone)) { showToast(isEn ? 'Enter valid 11-digit BD mobile (01XXXXXXXXX)' : 'সঠিক মোবাইল নম্বর দিন (01XXXXXXXXX)', 'error'); return; }
+  if (!district) { showToast(isEn ? 'Select a district' : 'জেলা নির্বাচন করুন', 'error'); return; }
+  if (!address) { showToast(isEn ? 'Enter full address' : 'সম্পূর্ণ ঠিকানা দিন', 'error'); return; }
+  if (cart.length === 0) { showToast(t('cart_empty_t'), 'error'); return; }
+
+  const btn = document.getElementById('placeOrderBtn');
+  btn.disabled = true;
+  document.getElementById('loadingOverlay').style.display = 'flex';
+  document.getElementById('loadingText').textContent = selectedPayment === 'bkash'
+    ? (isEn ? 'Redirecting to bKash checkout...' : 'বিকাশ পেমেন্ট গেটওয়েতে নেওয়া হচ্ছে...')
+    : (isEn ? 'Confirming your order...' : 'অর্ডার নিশ্চিত করা হচ্ছে...');
+
+  const orderItems = cart.map(i => ({
+    product_id: i.product_id,
+    name: i.name,
+    price: i.price,
+    quantity: i.quantity,
+    color: i.color,
+    size: i.size,
+    image: i.image
+  }));
+
+  try {
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customer_name: name,
+        customer_phone: phone,
+        customer_email: email,
+        shipping_address: address,
+        district,
+        thana,
+        notes,
+        coupon_code: appliedCouponCode,
+        items: JSON.stringify(orderItems),
+        payment_method: selectedPayment
+      })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      if (selectedPayment === 'bkash') {
+        const bkashRes = await fetch('/bkash/create-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_id: data.order_id, order_number: data.order_number })
+        });
+        const bkashData = await bkashRes.json();
+        if (bkashData.success && bkashData.bkashURL) {
+          window.location.href = bkashData.bkashURL;
+        } else {
+          showToast(bkashData.message || 'bKash failed', 'error');
+          document.getElementById('loadingOverlay').style.display = 'none';
+          btn.disabled = false;
+        }
+      } else {
+        clearCart();
+        window.location.href = `/order-success?order=${encodeURIComponent(data.order_number)}`;
+      }
+    } else {
+      if (res.status === 401 || data.requireAuth) {
+        showToast(data.message || t('login_required_checkout'), 'info');
+        setTimeout(() => { window.location.href = '/login?redirect=/checkout'; }, 600);
+        return;
+      }
+      showToast(data.message || 'Order failed', 'error');
+      document.getElementById('loadingOverlay').style.display = 'none';
+      btn.disabled = false;
+    }
+  } catch (error) {
+    showToast(isEn ? 'Network error, try again' : 'সার্ভার সমস্যা হয়েছে, আবার চেষ্টা করুন', 'error');
+    document.getElementById('loadingOverlay').style.display = 'none';
+    btn.disabled = false;
+  }
+}
+
+window.onLanguageChange = function () {
+  document.getElementById('shopName').textContent = getLang() === 'en' ? (settings.shop_name_en || 'Lungi Ghar') : (settings.shop_name || 'লুঙ্গি ঘর');
+  populateDistricts();
+  renderOrderItems();
+  updateShipping();
+  renderPaymentNotice();
+  renderAuthHeader();
+};
+
+populateDistricts();
+renderPaymentNotice();
+renderOrderItems();
+initAuthHeader().then(async u => {
+  if (!u) {
+    window.location.href = '/login?redirect=/checkout';
+    return;
+  }
+  if (!document.getElementById('custName').value) document.getElementById('custName').value = u.name || '';
+  if (!document.getElementById('custPhone').value) document.getElementById('custPhone').value = u.phone || '';
+  if (!document.getElementById('custEmail').value) document.getElementById('custEmail').value = u.email || '';
+  if (!document.getElementById('address').value) document.getElementById('address').value = u.address || '';
+  if (u.district) {
+    populateDistricts(u.district);
+    updateShipping();
+  }
+
+  // Load user saved addresses from Address Book
+  try {
+    const addrRes = await fetch('/api/auth/addresses').then(r => r.json());
+    userSavedAddresses = addrRes.addresses || [];
+    if (userSavedAddresses.length > 0) {
+      const isEn = getLang() === 'en';
+      const box = document.getElementById('savedAddressSelectorBox');
+      const sel = document.getElementById('savedAddressSelect');
+      box.style.display = 'block';
+      sel.innerHTML = `<option value="">${isEn ? '-- Select a saved address --' : '-- সংরক্ষিত ঠিকানা থেকে বেছে নিন --'}</option>` +
+        userSavedAddresses.map(a => `
+          <option value="${a.id}" ${a.is_default ? 'selected' : ''}>
+            ${escapeHtml(a.title || 'Address')} (${escapeHtml(a.recipient_name)} - ${escapeHtml(a.district)})
+          </option>
+        `).join('');
+
+      const defAddr = userSavedAddresses.find(a => a.is_default) || userSavedAddresses[0];
+      if (defAddr) {
+        applySavedAddress(defAddr.id);
+      }
+    }
+  } catch (err) {
+    console.error('Could not load user addresses:', err);
+  }
+});
+</script>
+</body>
+</html>

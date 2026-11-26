@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overview - Admin Console</title>
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main-content">
+    <div class="admin-topbar">
+      <div class="topbar-title" id="pageTitle">ড্যাশবোর্ড ওভারভিউ</div>
+      <div class="topbar-actions">
+        <a href="/" target="_blank" class="btn btn-outline btn-sm" id="btnViewStore">ওয়েবসাইট</a>
+        <div class="admin-avatar" id="adminAvatar">A</div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- Firebase Spark Plan & Gmail OTP Status Bar -->
+      <div id="firebaseBanner" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding:12px 16px; margin-bottom:16px; background:#fff; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:13px;">
+        <div id="firebaseBannerText" style="display:flex; align-items:center; gap:8px; font-weight:600; color:var(--dark);"></div>
+        <a href="/admin/settings" id="firebaseBannerLink" class="btn btn-outline btn-sm">সেটিংস দেখুন</a>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon green" id="statIconUsers"></div>
+          <div class="stat-info">
+            <div class="num" id="totalRegisteredUsers">...</div>
+            <div class="label" id="lblRegUsers">নিবন্ধিত ইউজার</div>
+            <div class="sub" id="subUsers">—</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue" id="statIconOrders"></div>
+          <div class="stat-info">
+            <div class="num" id="totalOrders">...</div>
+            <div class="label" id="lblOrders">মোট অর্ডার</div>
+            <div class="sub" id="subOrders">—</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon gold" id="statIconRev"></div>
+          <div class="stat-info">
+            <div class="num" id="totalRevenue">...</div>
+            <div class="label" id="lblRevenue">মোট আয়</div>
+            <div class="sub" id="subRev">—</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon pink" id="statIconBkash"></div>
+          <div class="stat-info">
+            <div class="num" id="bkashRevenue">...</div>
+            <div class="label" id="lblBkash">বিকাশ পরিশোধিত</div>
+            <div class="sub" id="subBkash">—</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon slate" id="statIconProds"></div>
+          <div class="stat-info">
+            <div class="num" id="totalProducts">...</div>
+            <div class="label" id="lblProducts">সক্রিয় পণ্য</div>
+            <div class="sub" id="subProducts">—</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue" id="statIconSubs"></div>
+          <div class="stat-info">
+            <div class="num" id="totalCustomersAll">...</div>
+            <div class="label" id="lblBuyersSubs">ক্রেতা ও সাবস্ক্রাইবার</div>
+            <div class="sub" id="subBuyersSubs">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="pendingAlert" class="alert alert-warning" style="display:none;"></div>
+
+      <div class="admin-grid-dashboard" style="margin-bottom:22px;">
+        <!-- Recent Orders -->
+        <div class="table-card" style="margin-bottom:0;">
+          <div class="table-card-header">
+            <div class="table-card-title" id="hdrRecentOrders">সাম্প্রতিক অর্ডার</div>
+            <a href="/admin/orders" class="btn btn-outline btn-sm" id="btnAllOrders">সব দেখুন</a>
+          </div>
+          <div style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th id="thOrdNo">অর্ডার</th>
+                  <th id="thOrdCust">গ্রাহক</th>
+                  <th id="thOrdPay">পেমেন্ট</th>
+                  <th id="thOrdTotal">মোট</th>
+                  <th id="thOrdStat">স্ট্যাটাস</th>
+                </tr>
+              </thead>
+              <tbody id="recentOrdersTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Registered Users -->
+        <div class="table-card" style="margin-bottom:0;">
+          <div class="table-card-header">
+            <div class="table-card-title" id="hdrRecentUsers">নতুন নিবন্ধিত ইউজার</div>
+            <a href="/admin/customers" class="btn btn-outline btn-sm" id="btnAllUsers">সব দেখুন</a>
+          </div>
+          <div style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th id="thUsrName">নাম</th>
+                  <th id="thUsrPhone">মোবাইল</th>
+                  <th id="thUsrDist">জেলা</th>
+                </tr>
+              </thead>
+              <tbody id="recentUsersTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-grid-2">
+        <!-- Top Products -->
+        <div class="table-card" style="margin-bottom:0;">
+          <div class="table-card-header">
+            <div class="table-card-title" id="hdrTopProds">বেস্টসেলার পণ্য</div>
+            <a href="/admin/products" class="btn btn-outline btn-sm" id="btnAllProds">সব দেখুন</a>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th id="thProdName">পণ্য</th>
+                <th id="thProdSold">বিক্রি</th>
+                <th id="thProdStock">স্টক</th>
+                <th id="thProdPrice">দাম</th>
+              </tr>
+            </thead>
+            <tbody id="topProductsTable"></tbody>
+          </table>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="table-card" style="padding:22px; margin-bottom:0;">
+          <div style="font-weight:700; margin-bottom:16px; font-size:15.5px; color:var(--dark);" id="hdrQuick">দ্রুত অ্যাকশন</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <a href="/admin/products" class="btn btn-primary" id="qaAddProd">নতুন পণ্য যোগ</a>
+            <a href="/admin/orders?status=pending" class="btn btn-warning" id="qaPending">পেন্ডিং অর্ডার</a>
+            <a href="/admin/customers" class="btn btn-outline" id="qaUsers">ইউজার তালিকা</a>
+            <a href="/admin/coupons" class="btn btn-outline" id="qaCoupons">কুপন ও অফার</a>
+            <a href="/admin/settings" class="btn btn-outline" id="qaSettings" style="grid-column:1/-1;">বিকাশ, Firebase ও সেটিংস</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<script src="/js/icons.js"></script>
+<script src="/js/i18n.js"></script>
+<script src="/admin/admin.js"></script>
+<script>
+let cachedStats = null;
+
+document.getElementById('statIconUsers').innerHTML = svgIcon('users', 22);
+document.getElementById('statIconOrders').innerHTML = svgIcon('package', 22);
+document.getElementById('statIconRev').innerHTML = svgIcon('chart', 22);
+document.getElementById('statIconBkash').innerHTML = svgIcon('creditCard', 22);
+document.getElementById('statIconProds').innerHTML = svgIcon('bag', 22);
+document.getElementById('statIconSubs').innerHTML = svgIcon('userCheck', 22);
+
+function renderDashboardLabels() {
+  const en = getLang() === 'en';
+  renderAdminSidebar('dashboard');
+  document.getElementById('pageTitle').innerHTML = `${svgIcon('chart', 19)} ${en ? 'Store Overview' : 'ড্যাশবোর্ড ওভারভিউ'}`;
+  document.getElementById('btnViewStore').textContent = en ? 'Storefront' : 'ওয়েবসাইট';
+  document.getElementById('lblRegUsers').textContent = en ? 'Registered Users' : 'নিবন্ধিত ইউজার';
+  document.getElementById('lblOrders').textContent = en ? 'Total Orders' : 'মোট অর্ডার';
+  document.getElementById('lblRevenue').textContent = en ? 'Total Revenue' : 'মোট আয়';
+  document.getElementById('lblBkash').textContent = en ? 'bKash Paid Revenue' : 'বিকাশ পরিশোধিত';
+  document.getElementById('lblProducts').textContent = en ? 'Active Products' : 'সক্রিয় পণ্য';
+  document.getElementById('lblBuyersSubs').textContent = en ? 'Buyers & Subscribers' : 'ক্রেতা ও সাবস্ক্রাইবার';
+  document.getElementById('hdrRecentOrders').textContent = en ? 'Recent Orders' : 'সাম্প্রতিক অর্ডার';
+  document.getElementById('hdrRecentUsers').textContent = en ? 'New Registered Users' : 'নতুন নিবন্ধিত ইউজার';
+  document.getElementById('hdrTopProds').textContent = en ? 'Top Selling Products' : 'বেস্টসেলার পণ্য';
+  document.getElementById('hdrQuick').textContent = en ? 'Quick Actions' : 'দ্রুত অ্যাকশন';
+  ['btnAllOrders', 'btnAllUsers', 'btnAllProds'].forEach(id => { document.getElementById(id).textContent = en ? 'View All' : 'সব দেখুন'; });
+  document.getElementById('thOrdNo').textContent = en ? 'Order' : 'অর্ডার';
+  document.getElementById('thOrdCust').textContent = en ? 'Customer' : 'গ্রাহক';
+  document.getElementById('thOrdPay').textContent = en ? 'Payment' : 'পেমেন্ট';
+  document.getElementById('thOrdTotal').textContent = en ? 'Total' : 'মোট';
+  document.getElementById('thOrdStat').textContent = en ? 'Status' : 'স্ট্যাটাস';
+  document.getElementById('thUsrName').textContent = en ? 'User' : 'নাম';
+  document.getElementById('thUsrPhone').textContent = en ? 'Mobile' : 'মোবাইল';
+  document.getElementById('thUsrDist').textContent = en ? 'District' : 'জেলা';
+  document.getElementById('thProdName').textContent = en ? 'Product' : 'পণ্য';
+  document.getElementById('thProdSold').textContent = en ? 'Sold' : 'বিক্রি';
+  document.getElementById('thProdStock').textContent = en ? 'Stock' : 'স্টক';
+  document.getElementById('thProdPrice').textContent = en ? 'Price' : 'দাম';
+  document.getElementById('qaAddProd').textContent = en ? 'Add Product' : 'নতুন পণ্য যোগ';
+  document.getElementById('qaPending').textContent = en ? 'Pending Orders' : 'পেন্ডিং অর্ডার';
+  document.getElementById('qaUsers').textContent = en ? 'Manage Users' : 'ইউজার তালিকা';
+  document.getElementById('qaCoupons').textContent = en ? 'Coupons & Promo' : 'কুপন ও অফার';
+  document.getElementById('qaSettings').textContent = en ? 'Settings & Firebase' : 'বিকাশ, Firebase ও সেটিংস';
+}
+
+function renderStatsData() {
+  if (!cachedStats) return;
+  const s = cachedStats;
+  const en = getLang() === 'en';
+  const stLabels = getStatusLabels();
+
+  const fb = s.firebaseStatus || {};
+  const bannerText = document.getElementById('firebaseBannerText');
+  const bannerLink = document.getElementById('firebaseBannerLink');
+  if (bannerText) {
+    if (fb.configured) {
+      bannerText.innerHTML = `${svgIcon('layers', 16)} <span>${en ? `Firebase Spark Plan Connected: <strong>${escapeHtml(fb.projectId)}</strong> · Gmail Verified Users: ${s.verifiedUsers ?? 0}/${s.totalRegisteredUsers}` : `Firebase Spark প্ল্যান যুক্ত: <strong>${escapeHtml(fb.projectId)}</strong> · Gmail ভেরিফায়েড: ${s.verifiedUsers ?? 0}/${s.totalRegisteredUsers}`}</span>`;
+    } else {
+      bannerText.innerHTML = `${svgIcon('layers', 16)} <span>${en ? `Firebase Cloud Firestore (Spark Free Plan) not connected yet · Verified Users: ${s.verifiedUsers ?? 0}/${s.totalRegisteredUsers}` : `Firebase Cloud Firestore (ফ্রি Spark প্ল্যান) সংযুক্ত নয় · Gmail ভেরিফায়েড: ${s.verifiedUsers ?? 0}/${s.totalRegisteredUsers}`}</span>`;
+    }
+  }
+  if (bannerLink) {
+    bannerLink.textContent = fb.configured ? (en ? 'Firebase Settings' : 'Firebase সেটিংস') : (en ? 'Connect Firebase & Gmail' : 'Firebase ও Gmail যুক্ত করুন');
+  }
+
+  document.getElementById('totalRegisteredUsers').textContent = s.totalRegisteredUsers;
+  document.getElementById('subUsers').textContent = en ? `${s.verifiedUsers ?? 0} Gmail verified · ${s.activeUsers} active` : `${s.verifiedUsers ?? 0} ভেরিফায়েড · ${s.activeUsers} সক্রিয়`;
+
+  document.getElementById('totalOrders').textContent = s.totalOrders;
+  document.getElementById('subOrders').textContent = en ? `${s.pendingOrders} pending · ${s.deliveredOrders} delivered` : `${s.pendingOrders} অপেক্ষামান · ${s.deliveredOrders} ডেলিভারি`;
+
+  document.getElementById('totalRevenue').textContent = formatPrice(s.totalRevenue);
+  document.getElementById('subRev').textContent = en ? `${s.codOrders} COD · ${s.bkashOrders} bKash orders` : `${s.codOrders} COD · ${s.bkashOrders} বিকাশ`;
+
+  document.getElementById('bkashRevenue').textContent = formatPrice(s.paidBkashRevenue);
+  document.getElementById('subBkash').textContent = en ? `From ${s.bkashOrders} bKash orders` : `${s.bkashOrders} টি বিকাশ অর্ডার থেকে`;
+
+  document.getElementById('totalProducts').textContent = s.totalProducts;
+  document.getElementById('subProducts').textContent = en ? `${s.totalCategories} categories · ${s.lowStockProducts} low stock` : `${s.totalCategories} ক্যাটাগরি · ${s.lowStockProducts} কম স্টক`;
+
+  document.getElementById('totalCustomersAll').textContent = s.totalCustomers;
+  document.getElementById('subBuyersSubs').textContent = en ? `${s.totalSubscribers} offer subscribers` : `${s.totalSubscribers} অফার সাবস্ক্রাইবার`;
+
+  const badge = document.getElementById('pendingBadge');
+  if (badge) {
+    badge.textContent = s.pendingOrders;
+    badge.style.display = s.pendingOrders > 0 ? 'inline-block' : 'none';
+  }
+
+  const pendingEl = document.getElementById('pendingAlert');
+  if (s.pendingOrders > 0) {
+    pendingEl.style.display = 'block';
+    pendingEl.innerHTML = en
+      ? `<strong>${s.pendingOrders}</strong> pending order(s) require review. <a href="/admin/orders?status=pending" style="color:var(--primary);font-weight:700;margin-left:6px;">Review Orders →</a>`
+      : `<strong>${s.pendingOrders}</strong> টি অর্ডার অপেক্ষামান রয়েছে। <a href="/admin/orders?status=pending" style="color:var(--primary);font-weight:700;margin-left:6px;">এখনই দেখুন →</a>`;
+  } else {
+    pendingEl.style.display = 'none';
+  }
+
+  const tbody = document.getElementById('recentOrdersTable');
+  tbody.innerHTML = s.recentOrders && s.recentOrders.length > 0
+    ? s.recentOrders.map(o => `
+      <tr>
+        <td><a href="/admin/orders" style="color:var(--primary); font-weight:700;">${escapeHtml(o.order_number)}</a></td>
+        <td><div>${escapeHtml(o.customer_name)}</div><div style="font-size:11.5px;color:var(--text-light);">${escapeHtml(o.customer_phone)}</div></td>
+        <td>${o.payment_method === 'bkash' ? 'bKash' : 'COD'}</td>
+        <td style="font-weight:600;">${formatPrice(o.total)}</td>
+        <td><span class="status-badge ${statusClasses[o.order_status] || 'badge-pending'}">${stLabels[o.order_status] || o.order_status}</span></td>
+      </tr>
+    `).join('')
+    : `<tr><td colspan="5" class="empty-state">${en ? 'No orders yet' : 'কোনো অর্ডার নেই'}</td></tr>`;
+
+  const utbody = document.getElementById('recentUsersTable');
+  utbody.innerHTML = s.recentUsers && s.recentUsers.length > 0
+    ? s.recentUsers.map(u => `
+      <tr>
+        <td><div style="font-weight:600;">${escapeHtml(u.name)}</div><div style="font-size:11px;color:var(--text-light);">${escapeHtml(u.email || '')}</div></td>
+        <td>${escapeHtml(u.phone)}</td>
+        <td>${escapeHtml(u.district || '—')}</td>
+      </tr>
+    `).join('')
+    : `<tr><td colspan="3" class="empty-state">${en ? 'No registered users yet' : 'কোনো নিবন্ধিত ইউজার নেই'}</td></tr>`;
+
+  const ptbody = document.getElementById('topProductsTable');
+  ptbody.innerHTML = s.topProducts && s.topProducts.length > 0
+    ? s.topProducts.map(p => `
+      <tr>
+        <td style="font-weight:600;">${escapeHtml(en && p.name_en ? p.name_en : p.name)}</td>
+        <td>${p.total_sold}</td>
+        <td>${p.stock}</td>
+        <td style="color:var(--primary);font-weight:600;">${formatPrice(p.price)}</td>
+      </tr>
+    `).join('')
+    : `<tr><td colspan="4" class="empty-state">—</td></tr>`;
+}
+
+async function loadDashboard() {
+  renderDashboardLabels();
+  const admin = await checkSession();
+  if (!admin) return;
+  const data = await fetch('/admin/api/stats').then(r => r.json());
+  if (data.success) {
+    cachedStats = data.stats;
+    renderStatsData();
+  }
+}
+
+window.onLanguageChange = function () {
+  renderDashboardLabels();
+  renderStatsData();
+};
+
+loadDashboard();
+</script>
+</body>
+</html>

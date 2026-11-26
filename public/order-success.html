@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmed - Lungi Ghar</title>
+  <link id="siteFavicon" rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/firebase-analytics.js"></script>
+</head>
+<body>
+<div class="auth-topbar">
+  <div class="container">
+    <a href="/" class="logo">
+      <div class="logo-mark" id="brandLogoMark"></div>
+      <div class="logo-text"><span id="shopName">লুঙ্গি ঘর</span><span data-i18n="brand_sub">বাংলাদেশ হ্যান্ডলুম কালেকশন</span></div>
+    </a>
+    <div data-lang-switcher></div>
+  </div>
+</div>
+
+<div style="min-height:calc(100vh - 72px); display:flex; align-items:center; justify-content:center; padding:32px 20px;">
+  <div class="auth-card wide" style="text-align:center;">
+    <div style="width:68px;height:68px;border-radius:50%;background:var(--primary-soft);color:var(--primary);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;" id="successIcon"></div>
+    <h1 class="auth-title" style="color:var(--primary);" data-i18n="order_success_title">অর্ডার সফলভাবে গৃহীত হয়েছে</h1>
+    <p class="auth-sub" data-i18n="order_success_sub">আমাদের সাথে কেনাকাটার জন্য ধন্যবাদ। শীঘ্রই ডেলিভারি প্রক্রিয়া শুরু হবে।</p>
+
+    <div style="background:var(--primary-soft); border:1px solid #cce3d8; border-radius:12px; padding:18px; margin-bottom:20px;">
+      <div style="font-size:12.5px; color:var(--text-light); margin-bottom:4px;" data-i18n="order_number">অর্ডার নম্বর</div>
+      <div style="font-size:24px; font-weight:700; color:var(--primary); letter-spacing:2px;" id="orderNum">—</div>
+      <div id="paymentBadge" style="margin-top:8px;"></div>
+    </div>
+
+    <div id="orderDetailsBox" style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:18px; margin-bottom:22px; text-align:left; display:none;"></div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;" class="form-row">
+      <a href="/" class="btn btn-primary btn-full" data-i18n="continue_shopping">আরও কেনাকাটা করুন</a>
+      <a href="/track-order" class="btn btn-outline btn-full" id="trackLink" data-i18n="track_btn">ট্র্যাক করুন</a>
+    </div>
+    <button type="button" class="btn btn-outline btn-full" style="margin-top:10px;" onclick="window.print()">
+      <span id="iconPrint"></span> <span data-i18n="print_receipt">রসিদ প্রিন্ট করুন</span>
+    </button>
+  </div>
+</div>
+
+<script src="/js/icons.js"></script>
+<script src="/js/i18n.js"></script>
+<script src="/js/cart.js"></script>
+<script>
+clearCart();
+document.getElementById('brandLogoMark').innerHTML = svgIcon('layers', 20);
+document.getElementById('successIcon').innerHTML = svgIcon('checkCircle', 34);
+document.getElementById('iconPrint').innerHTML = svgIcon('printer', 16);
+
+const params = new URLSearchParams(window.location.search);
+const orderNum = params.get('order');
+let orderObj = null;
+
+function renderOrderBox() {
+  if (!orderObj) return;
+  const o = orderObj;
+  const badge = document.getElementById('paymentBadge');
+  const isEn = getLang() === 'en';
+  if (o.payment_method === 'bkash' && o.payment_status === 'paid') {
+    badge.innerHTML = `<span class="status-badge status-delivered">${isEn ? 'bKash Paid' : 'বিকাশ পেমেন্ট সম্পন্ন'} (TrxID: ${escapeHtml(o.bkash_transaction_id || 'Verified')})</span>`;
+  } else if (o.payment_method === 'bkash') {
+    badge.innerHTML = `<span class="status-badge status-pending">${isEn ? 'bKash Payment Pending' : 'বিকাশ পেমেন্ট অপেক্ষামান'}</span>`;
+  } else {
+    badge.innerHTML = `<span class="status-badge status-confirmed">${t('cod_title')}</span>`;
+  }
+
+  const box = document.getElementById('orderDetailsBox');
+  box.style.display = 'block';
+  box.innerHTML = `
+    <div style="font-size:13.5px; color:var(--text-light); margin-bottom:6px;">${t('customer')}: <strong style="color:var(--dark);">${escapeHtml(o.customer_name)}</strong> (${escapeHtml(o.customer_phone)})</div>
+    <div style="font-size:13.5px; color:var(--text-light); margin-bottom:10px;">${t('delivery_info')}: ${escapeHtml(o.district)}, ${escapeHtml(o.shipping_address)}</div>
+    <div style="border-top:1px solid var(--border); padding-top:10px; display:flex; justify-content:space-between; font-weight:700;">
+      <span>${t('total')} (${o.items.length} ${t('products_count')})</span>
+      <span style="color:var(--primary);">${formatPrice(o.total)}</span>
+    </div>
+  `;
+}
+
+if (orderNum) {
+  document.getElementById('orderNum').textContent = orderNum;
+  document.getElementById('trackLink').href = `/track-order?order=${encodeURIComponent(orderNum)}`;
+  fetch(`/api/orders/track/${encodeURIComponent(orderNum)}`).then(r => r.json()).then(d => {
+    if (d.success && d.order) {
+      orderObj = d.order;
+      renderOrderBox();
+    }
+  });
+}
+
+fetch('/api/settings').then(r => r.json()).then(d => {
+  if (d.success) {
+    document.getElementById('shopName').textContent = getLang() === 'en' ? (d.settings.shop_name_en || 'Lungi Ghar') : (d.settings.shop_name || 'লুঙ্গি ঘর');
+  }
+});
+
+window.onLanguageChange = renderOrderBox;
+</script>
+</body>
+</html>

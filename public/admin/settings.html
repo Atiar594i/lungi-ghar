@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings &amp; bKash - Admin Console</title>
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar"></aside>
+
+  <div class="main-content">
+    <div class="admin-topbar">
+      <div class="topbar-title" id="pageTitle">সেটিংস ও বিকাশ কনফিগারেশন</div>
+      <div class="topbar-actions">
+        <div class="admin-avatar">A</div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="admin-grid-2">
+        <!-- Shop Settings -->
+        <div class="table-card" style="padding:24px;">
+          <h3 style="font-size:15.5px; font-weight:700; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--border);" id="hdrShop">দোকানের তথ্য ও লোকেশন / Storefront</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">দোকানের নাম (বাংলা)</label>
+              <input class="form-control" id="shop_name" type="text">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Store Name (English)</label>
+              <input class="form-control" id="shop_name_en" type="text">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">মোবাইল নম্বর</label>
+              <input class="form-control" id="shop_phone" type="tel">
+            </div>
+            <div class="form-group">
+              <label class="form-label">ইমেইল</label>
+              <input class="form-control" id="shop_email" type="email">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">দোকানের প্রধান জেলা (বাংলা) / District (BN)</label>
+              <input class="form-control" id="shop_district" type="text" placeholder="যেমন: ঢাকা, পাবনা বা সিরাজগঞ্জ">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Store District (EN)</label>
+              <input class="form-control" id="shop_district_en" type="text" placeholder="e.g. Sirajganj, Dhaka, Pabna">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">গুগল ম্যাপ লোকেশন লিংক / Google Maps URL</label>
+            <input class="form-control" id="shop_google_map_url" type="url" placeholder="https://maps.google.com/?q=...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">ঠিকানা (বাংলা)</label>
+            <input class="form-control" id="shop_address" type="text">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Address (English)</label>
+            <input class="form-control" id="shop_address_en" type="text">
+          </div>
+          <button type="button" class="btn btn-primary" onclick="saveSettings()">সংরক্ষণ করুন / Save</button>
+        </div>
+
+        <!-- Branding & Logos -->
+        <div class="table-card" style="padding:24px;">
+          <h3 style="font-size:15.5px; font-weight:700; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--border);">ব্র্যান্ডিং, লোগো ও ফেভআইকন / Branding & Logos</h3>
+          <div class="form-group">
+            <label class="form-label">ওয়েবসাইট ফেভআইকন / Favicon (.ico, .png, .svg)</label>
+            <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
+              <img id="prevFavicon" src="/favicon.ico" style="width:32px; height:32px; object-fit:contain; border:1px solid var(--border); border-radius:6px; padding:2px; background:#f8fafc;" onerror="this.style.display='none'">
+              <input class="form-control" id="site_favicon" type="text" placeholder="/uploads/favicon.png অথবা ইমেজ URL" style="flex:1;">
+            </div>
+            <div style="display:flex; gap:8px;">
+              <input type="file" id="fileFavicon" accept="image/*" style="display:none;" onchange="uploadBrandingImage('fileFavicon', 'site_favicon', 'prevFavicon')">
+              <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('fileFavicon').click()">ফাইল আপলোড করুন / Upload Favicon</button>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:16px;">
+            <label class="form-label">ব্র্যান্ড লোগো / Brand Logo (.png, .svg, .jpg)</label>
+            <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
+              <img id="prevLogo" src="" style="width:40px; height:40px; object-fit:contain; border:1px solid var(--border); border-radius:8px; padding:2px; background:#f8fafc; display:none;" onerror="this.style.display='none'">
+              <input class="form-control" id="site_logo" type="text" placeholder="/uploads/logo.png অথবা ইমেজ URL" style="flex:1;">
+            </div>
+            <div style="display:flex; gap:8px;">
+              <input type="file" id="fileLogo" accept="image/*" style="display:none;" onchange="uploadBrandingImage('fileLogo', 'site_logo', 'prevLogo')">
+              <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('fileLogo').click()">ফাইল আপলোড করুন / Upload Logo</button>
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" onclick="saveSettings()">সংরক্ষণ করুন / Save</button>
+        </div>
+
+        <!-- Shipping & Order Rules -->
+        <div class="table-card" style="padding:24px;">
+          <h3 style="font-size:15.5px; font-weight:700; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--border);" id="hdrShip">ডেলিভারি চার্জ ও সময় / Shipping & Delivery</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">ঢাকার ভেতরে ডেলিভারি চার্জ (৳)</label>
+              <input class="form-control" id="shipping_inside_dhaka" type="number" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">ঢাকার বাইরে ডেলিভারি চার্জ (৳)</label>
+              <input class="form-control" id="shipping_outside_dhaka" type="number" min="0">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">ফ্রি ডেলিভারির ন্যূনতম অর্ডার (৳)</label>
+              <input class="form-control" id="free_shipping_above" type="number" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">সর্বনিম্ন অর্ডার পরিমাণ (৳) / Min Order Amount</label>
+              <input class="form-control" id="min_order_amount" type="number" min="0" placeholder="0 = কোনো বাধ্যবাধকতা নেই">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">ঢাকার ভেতরে সময়সীমা / Inside Dhaka Delivery Time</label>
+              <input class="form-control" id="delivery_time_inside_dhaka" type="text" placeholder="যেমন: ২৪–৪৮ ঘণ্টা / 24-48 Hours">
+            </div>
+            <div class="form-group">
+              <label class="form-label">ঢাকার বাইরে সময়সীমা / Outside Dhaka Delivery Time</label>
+              <input class="form-control" id="delivery_time_outside_dhaka" type="text" placeholder="যেমন: ২–৩ কার্যদিবস / 2-3 Days">
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" onclick="saveSettings()">সংরক্ষণ করুন / Save</button>
+        </div>
+
+        <!-- Payment Methods & bKash -->
+        <div class="table-card" style="padding:24px;">
+          <h3 style="font-size:15.5px; font-weight:700; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--border);">পেমেন্ট মেথড নিয়ন্ত্রণ ও বিকাশ API / Payments</h3>
+          <div class="alert alert-info" style="margin-bottom:16px; font-size:12.5px; line-height:1.6;">
+            পেমেন্ট নিয়ন্ত্রণ: বিকাশ বন্ধ রাখলে চেকআউটে বিকাশ অপশন সম্পূর্ণ লুকানো থাকবে, গ্রাহক শুধু ক্যাশ অন ডেলিভারিতে অর্ডার করতে পারবেন। চালু রাখলে বিকাশ ও ক্যাশ অন ডেলিভারি দুটোই থাকবে।
+          </div>
+
+          <div class="form-row" style="margin-bottom:16px;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight:700;">বিকাশ গেটওয়ে স্ট্যাটাস / bKash Status</label>
+              <select class="form-control" id="bkash_enabled" style="font-weight:600;">
+                <option value="1">সক্রিয় (ON - চেকআউটে বিকাশ চালু থাকবে)</option>
+                <option value="0">নিষ্ক্রিয় (OFF - বিকাশ লুকানো থাকবে)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight:700;">ক্যাশ অন ডেলিভারি / Cash on Delivery</label>
+              <select class="form-control" id="cod_enabled" style="font-weight:600;">
+                <option value="1">সক্রিয় (ON - ক্যাশ অন ডেলিভারি চালু)</option>
+                <option value="0">নিষ্ক্রিয় (OFF - ক্যাশ অন ডেলিভারি বন্ধ)</option>
+              </select>
+            </div>
+          </div>
+
+          <h4 style="font-size:14px; font-weight:700; margin-bottom:12px;">bKash Tokenized API ক্রেডেনশিয়াল</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Payment Mode</label>
+              <select class="form-control" id="bkash_mode">
+                <option value="auto">Auto (Live if keys set, else Sandbox Demo)</option>
+                <option value="live">Live API Only</option>
+                <option value="demo">Sandbox Simulator Mode</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Environment</label>
+              <select class="form-control" id="bkash_env">
+                <option value="sandbox">Sandbox</option>
+                <option value="production">Production (Live)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">App Key</label>
+            <input class="form-control" id="bkash_app_key" type="text">
+          </div>
+          <div class="form-group">
+            <label class="form-label">App Secret</label>
+            <input class="form-control" id="bkash_app_secret" type="password">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Username</label>
+              <input class="form-control" id="bkash_username" type="text">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <input class="form-control" id="bkash_password" type="password">
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button type="button" class="btn btn-primary" onclick="saveBkashSettings()">সংরক্ষণ করুন / Save Payment</button>
+            <button type="button" class="btn btn-outline" id="testBkashBtn" onclick="testBkashConnection()">Test Connection</button>
+          </div>
+        </div>
+
+        <!-- Announcement Bar Settings -->
+        <div class="table-card" style="padding:24px;">
+          <h3 style="font-size:15.5px; font-weight:700; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--border);" id="hdrAnnounce">টপ অ্যানাউন্সমেন্ট ব্যানার / Announcement Bar</h3>
+          <div class="form-group">
+            <label class="form-label">ব্যানার স্ট্যাটাস / Status</label>
+            <select class="form-control" id="announcement_enabled">
+              <option value="1">সক্রিয় (Active / Show)</option>
+              <option value="0">নিষ্ক্রিয় (Hide)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ঘোষণা বার্তা (বাংলা)</label>
+            <input class="form-control" id="announcement_text" type="text" placeholder="লুঙ্গি ঘর-এ স্বাগতম! সারা দেশে ক্যাশ অন ডেলিভারি...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Announcement Text (English)</label>
+            <input class="form-control" id="announcement_text_en" type="text" placeholder="Welcome to Lungi Ghar! Free delivery above ৳1500...">
+          </div>
+          <button type="button" class="btn btn-primary" onclick="saveSettings()">সংরক্ষণ করুন / Save</button>
+        </div>
+
+        <!-- Social Media Channels -->
+        <div class="table-card" style="padding:24px;">
+          <h3 style="font-size:15.5px; font-weight:700; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--border);">সোশ্যাল মিডিয়া চ্যানেলসমূহ / Social Channels</h3>
+          <div class="alert alert-info" style="font-size:12.5px; margin-bottom:14px;">
+            যে যে সোশ্যাল প্ল্যাটফর্মের লিংক দেবেন সেগুলো ফুটারে লাইভ আইকন হিসেবে গ্রাহকদের দেখানো হবে। ফাঁকা রাখলে দেখানো হবে না।
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Facebook Page URL</label>
+              <input class="form-control" id="facebook_url" type="url" placeholder="https://facebook.com/yourpage">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Instagram URL</label>
+              <input class="form-control" id="instagram_url" type="url" placeholder="https://instagram.com/yourhandle">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">WhatsApp Number</label>
+              <input class="form-control" id="whatsapp" type="tel" placeholder="01700000000">
+            </div>
+            <div class="form-group">
+              <label class="form-label">YouTube Channel URL</label>
+              <input class="form-control" id="youtube_url" type="url" placeholder="https://youtube.com/@channel">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">TikTok Profile URL</label>
+              <input class="form-control" id="tiktok_url" type="url" placeholder="https://tiktok.com/@profile">
+            </div>
+            <div class="form-group">
+              <label class="form-label">X / Twitter URL</label>
+              <input class="form-control" id="twitter_url" type="url" placeholder="https://x.com/profile">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Telegram Channel / Group URL</label>
+              <input class="form-control" id="telegram_url" type="url" placeholder="https://t.me/yourgroup">
+            </div>
+            <div class="form-group">
+              <label class="form-label">LinkedIn Page URL</label>
+              <input class="form-control" id="linkedin_url" type="url" placeholder="https://linkedin.com/company/...">
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" onclick="saveSettings()">সংরক্ষণ করুন / Save</button>
+        </div>
+
+        <!-- Store Policies & Analytics -->
+        <div class="table-card" style="padding:24px;">
+          <h3 style="font-size:15.5px; font-weight:700; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--border);">ই-কমার্স পলিসি ও অ্যানালিটিক্স / Policies & Tracking</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">কাস্টমার সাপোর্ট সময় (বাংলা) / Support Hours (BN)</label>
+              <input class="form-control" id="support_hours" type="text" placeholder="যেমন: সোম–শনি: সকাল ৯টা – রাত ১০টা">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Support Hours (EN)</label>
+              <input class="form-control" id="support_hours_en" type="text" placeholder="e.g. Mon–Sat: 9:00 AM – 10:00 PM">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">রিটার্ন সময়সীমা (দিন) / Return Policy Days</label>
+              <input class="form-control" id="return_policy_days" type="number" min="0" placeholder="7">
+            </div>
+            <div class="form-group">
+              <label class="form-label">কাস্টম ফুটার কপিরাইট (বাংলা) / Copyright (BN)</label>
+              <input class="form-control" id="footer_copyright" type="text" placeholder="যেমন: ২০২৬ লুঙ্গি ঘর। সমস্ত অধিকার সংরক্ষিত।">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Footer Copyright (EN)</label>
+            <input class="form-control" id="footer_copyright_en" type="text" placeholder="e.g. 2026 Lungi Ghar. All rights reserved.">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">রিটার্ন ও রিফান্ড নীতি (বাংলা)</label>
+              <textarea class="form-control" id="return_policy_text" rows="2" placeholder="অব্যবহৃত পণ্য ৭ দিনের মধ্যে ক্যাশ মেমোসহ পরিবর্তনযোগ্য..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Return Policy (EN)</label>
+              <textarea class="form-control" id="return_policy_text_en" rows="2" placeholder="Unused products are eligible for 7-day exchange with cash memo..."></textarea>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Google Analytics Measurement ID</label>
+              <input class="form-control" id="google_analytics_id" type="text" placeholder="G-FXY7NMQENH">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Facebook Pixel ID</label>
+              <input class="form-control" id="facebook_pixel_id" type="text" placeholder="1234567890">
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" onclick="saveSettings()">সংরক্ষণ করুন / Save</button>
+        </div>
+
+        <!-- Admin Password & Security -->
+        <div class="table-card" style="padding:24px;">
+          <h3 style="font-size:15.5px; font-weight:700; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--border);">অ্যাডমিন নিরাপত্তা ও পাসওয়ার্ড / Security</h3>
+          <div class="form-group">
+            <label class="form-label">বর্তমান পাসওয়ার্ড / Current Password</label>
+            <input class="form-control" id="currentPass" type="password">
+          </div>
+          <div class="form-group">
+            <label class="form-label">নতুন পাসওয়ার্ড / New Password</label>
+            <input class="form-control" id="newPass" type="password">
+          </div>
+          <button type="button" class="btn btn-warning" onclick="changePassword()">পাসওয়ার্ড আপডেট করুন</button>
+        </div>
+
+        <!-- Firebase Cloud Firestore (Spark Free Plan) -->
+        <div class="table-card" style="padding:24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid var(--border); flex-wrap:wrap;">
+            <h3 id="hdrFirebase" style="font-size:15.5px; font-weight:700; display:flex; align-items:center; gap:8px; margin:0;"></h3>
+            <span id="firebaseStatusBadge" class="status-badge badge-inactive">...</span>
+          </div>
+          <div class="alert alert-info" id="firebaseGuideText" style="font-size:12.5px; line-height:1.6;">
+            ফায়ারবেস ফ্রি (Spark) প্ল্যানের জন্য অপ্টিমাইজড: সকল অর্ডার, ইউজার, পণ্য এবং একক <strong>analytics/totals</strong> ডকুমেন্ট স্বয়ংক্রিয়ভাবে Cloud Firestore-এ সিঙ্ক হয়।
+            <br>সেটআপ: Firebase Console (Free Spark Plan) &rarr; Firestore Database চালু করুন &rarr; Project Settings &rarr; Service Accounts &rarr; <strong>Generate new private key</strong> (.json) ডাউনলোড করে নিচে আপলোড বা পেস্ট করুন।
+          </div>
+          <div class="form-group">
+            <label class="form-label" id="lblFirebaseFile">Service Account .json ফাইল আপলোড করুন</label>
+            <input class="form-control" id="firebaseJsonFile" type="file" accept=".json,application/json" onchange="handleFirebaseFile(this)">
+          </div>
+          <div class="form-group">
+            <label class="form-label" id="lblFirebaseJson">অথবা Service Account JSON পেস্ট করুন</label>
+            <textarea class="form-control" id="firebase_service_account_json" rows="4" style="font-family:monospace; font-size:12px;" placeholder='{"type":"service_account","project_id":"...","private_key":"...","client_email":"..."}'></textarea>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+            <button type="button" class="btn btn-primary" id="saveFirebaseBtn" onclick="saveFirebaseSettings()">Firebase সেভ করুন</button>
+            <button type="button" class="btn btn-outline" id="testFirebaseBtn" onclick="testFirebase()">কানেকশন টেস্ট</button>
+            <button type="button" class="btn btn-success" id="syncFirebaseBtn" onclick="syncAllToFirebase()">সব ডেটা ও টোটাল সিঙ্ক</button>
+            <button type="button" class="btn btn-danger btn-sm" id="clearFirebaseBtn" style="display:none;" onclick="clearFirebaseSettings()">ডিসকানেক্ট</button>
+          </div>
+          <div id="firebaseTotalsBox" style="display:none; background:#f8fafc; border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; font-size:12.5px;"></div>
+        </div>
+
+        <!-- Gmail / SMTP OTP Verification Settings -->
+        <div class="table-card" style="padding:24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid var(--border); flex-wrap:wrap;">
+            <h3 id="hdrEmail" style="font-size:15.5px; font-weight:700; display:flex; align-items:center; gap:8px; margin:0;"></h3>
+            <span id="emailStatusBadge" class="status-badge badge-inactive">...</span>
+          </div>
+          <div class="alert alert-info" id="emailGuideText" style="font-size:12.5px; line-height:1.6;">
+            নতুন ইউজার রেজিস্ট্রেশনের সময় ৬ ডিজিটের ভেরিফিকেশন কোড Gmail-এ পাঠাতে আপনার Gmail ও Google Account এর ১৬ অক্ষরের <strong>App Password</strong> দিন। সেট না করা থাকলে স্যান্ডবক্স মোডে স্ক্রিনে কোড দেখাবে।
+          </div>
+          <div class="form-group">
+            <label class="form-label" id="lblSmtpEmail">Gmail অ্যাড্রেস (Sender Gmail)</label>
+            <input class="form-control" id="smtp_email" type="email" placeholder="yourstore@gmail.com">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" id="lblSmtpPass">Gmail App Password (১৬ অক্ষর)</label>
+              <input class="form-control" id="smtp_app_password" type="password" placeholder="xxxx xxxx xxxx xxxx">
+            </div>
+            <div class="form-group">
+              <label class="form-label" id="lblSmtpFrom">প্রেরকের নাম / Sender Name</label>
+              <input class="form-control" id="smtp_from_name" type="text" placeholder="Lungi Ghar">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" id="lblTestEmail">টেস্ট ইমেইল পাঠানোর ঠিকানা / Test Recipient Gmail</label>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <input class="form-control" id="test_email_to" type="email" style="flex:1; min-width:200px;" placeholder="test@gmail.com">
+              <button type="button" class="btn btn-outline" id="testEmailBtn" onclick="testEmailSettings()">টেস্ট কোড পাঠান</button>
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" id="saveEmailBtn" onclick="saveEmailSettings()">Gmail সেটিংস সংরক্ষণ করুন</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<script src="/js/icons.js"></script>
+<script src="/js/i18n.js"></script>
+<script src="/admin/admin.js"></script>
+<script>
+let integrationStatus = { firebase: {}, email: {}, firebaseTotals: null };
+
+function syncLabels() {
+  const en = getLang() === 'en';
+  renderAdminSidebar('settings');
+  document.getElementById('pageTitle').innerHTML = `${svgIcon('settings', 19)} ${en ? 'Settings & Integrations' : 'সেটিংস ও ইন্টিগ্রেশন'}`;
+  document.getElementById('hdrShop').textContent = en ? 'Storefront Information' : 'দোকানের তথ্য';
+  document.getElementById('hdrShip').textContent = en ? 'Shipping & Delivery Rates' : 'ডেলিভারি চার্জ সেটিংস';
+  document.getElementById('hdrFirebase').innerHTML = `${svgIcon('layers', 18)} ${en ? 'Firebase Firestore (Spark Free Plan)' : 'Firebase Firestore (ফ্রি Spark প্ল্যান)'}`;
+  document.getElementById('hdrEmail').innerHTML = `${svgIcon('mail', 18)} ${en ? 'Gmail OTP Verification (SMTP)' : 'Gmail ওটিপি ভেরিফিকেশন (SMTP)'}`;
+  document.getElementById('lblFirebaseFile').textContent = en ? 'Upload Service Account .json File' : 'Service Account .json ফাইল আপলোড করুন';
+  document.getElementById('lblFirebaseJson').textContent = en ? 'Or Paste Service Account JSON' : 'অথবা Service Account JSON পেস্ট করুন';
+  document.getElementById('saveFirebaseBtn').textContent = en ? 'Save Firebase Config' : 'Firebase সেভ করুন';
+  document.getElementById('testFirebaseBtn').textContent = en ? 'Test Connection' : 'কানেকশন টেস্ট';
+  document.getElementById('syncFirebaseBtn').textContent = en ? 'Sync All & Totals' : 'সব ডেটা ও টোটাল সিঙ্ক';
+  document.getElementById('clearFirebaseBtn').textContent = en ? 'Disconnect' : 'ডিসকানেক্ট';
+  document.getElementById('lblSmtpEmail').textContent = en ? 'Sender Gmail Address' : 'Gmail অ্যাড্রেস (Sender Gmail)';
+  document.getElementById('lblSmtpPass').textContent = en ? 'Gmail App Password (16 chars)' : 'Gmail App Password (১৬ অক্ষর)';
+  document.getElementById('lblSmtpFrom').textContent = en ? 'Sender Name' : 'প্রেরকের নাম / Sender Name';
+  document.getElementById('lblTestEmail').textContent = en ? 'Test Recipient Gmail' : 'টেস্ট ইমেইল পাঠানোর ঠিকানা';
+  document.getElementById('testEmailBtn').textContent = en ? 'Send Test Code' : 'টেস্ট কোড পাঠান';
+  document.getElementById('saveEmailBtn').textContent = en ? 'Save Gmail Settings' : 'Gmail সেটিংস সংরক্ষণ করুন';
+  renderIntegrationBadges();
+}
+
+async function uploadBrandingImage(fileInputId, targetInputId, previewImgId) {
+  const input = document.getElementById(fileInputId);
+  const file = input && input.files && input.files[0];
+  if (!file) {
+    showToast(getLang() === 'en' ? 'Select an image file first' : 'প্রথমে একটি ছবি ফাইল নির্বাচন করুন', 'error');
+    return;
+  }
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const res = await fetch('/admin/api/upload', {
+      method: 'POST',
+      body: formData
+    }).then(r => r.json());
+
+    if (res.success && res.url) {
+      document.getElementById(targetInputId).value = res.url;
+      const prev = document.getElementById(previewImgId);
+      if (prev) {
+        prev.src = res.url;
+        prev.style.display = 'inline-block';
+      }
+      showToast(getLang() === 'en' ? 'Uploaded! Click Save to apply.' : 'ছবি আপলোড হয়েছে! সেভ করতে সংরক্ষণ বাটনে চাপুন।', 'success');
+    } else {
+      showToast(res.message || 'Upload failed', 'error');
+    }
+  } catch (err) {
+    showToast(getLang() === 'en' ? 'Upload failed' : 'ফাইল আপলোড ব্যর্থ হয়েছে', 'error');
+  }
+}
+
+async function loadSettings() {
+  const data = await fetch('/admin/api/settings').then(r => r.json());
+  if (!data.success) return;
+  const s = data.settings;
+
+  const fields = [
+    'shop_name', 'shop_name_en', 'shop_phone', 'shop_email', 'shop_address', 'shop_address_en',
+    'shop_district', 'shop_district_en', 'shop_google_map_url',
+    'site_favicon', 'site_logo',
+    'shipping_inside_dhaka', 'shipping_outside_dhaka', 'free_shipping_above',
+    'min_order_amount', 'delivery_time_inside_dhaka', 'delivery_time_outside_dhaka',
+    'bkash_enabled', 'cod_enabled',
+    'announcement_enabled', 'announcement_text', 'announcement_text_en',
+    'facebook_url', 'instagram_url', 'whatsapp', 'youtube_url', 'tiktok_url', 'twitter_url', 'telegram_url', 'linkedin_url',
+    'support_hours', 'support_hours_en', 'return_policy_days', 'return_policy_text', 'return_policy_text_en', 'footer_copyright', 'footer_copyright_en',
+    'google_analytics_id', 'facebook_pixel_id',
+    'bkash_app_key', 'bkash_app_secret', 'bkash_username', 'bkash_password',
+    'smtp_email', 'smtp_from_name'
+  ];
+
+  fields.forEach(f => {
+    const el = document.getElementById(f);
+    if (el && s[f] !== undefined) el.value = s[f];
+  });
+
+  if (s.site_favicon) {
+    const prev = document.getElementById('prevFavicon');
+    if (prev) {
+      prev.src = s.site_favicon;
+      prev.style.display = 'inline-block';
+    }
+  }
+  if (s.site_logo) {
+    const prev = document.getElementById('prevLogo');
+    if (prev) {
+      prev.src = s.site_logo;
+      prev.style.display = 'inline-block';
+    }
+  }
+
+  if (s.bkash_env) document.getElementById('bkash_env').value = s.bkash_env;
+  if (s.bkash_mode) document.getElementById('bkash_mode').value = s.bkash_mode;
+  await loadIntegrationsStatus();
+}
+
+async function saveSettings() {
+  const fields = {
+    shop_name: document.getElementById('shop_name').value,
+    shop_name_en: document.getElementById('shop_name_en').value,
+    shop_phone: document.getElementById('shop_phone').value,
+    shop_email: document.getElementById('shop_email').value,
+    shop_address: document.getElementById('shop_address').value,
+    shop_address_en: document.getElementById('shop_address_en').value,
+    shop_district: document.getElementById('shop_district').value,
+    shop_district_en: document.getElementById('shop_district_en').value,
+    shop_google_map_url: document.getElementById('shop_google_map_url').value,
+    site_favicon: document.getElementById('site_favicon').value,
+    site_logo: document.getElementById('site_logo').value,
+    shipping_inside_dhaka: document.getElementById('shipping_inside_dhaka').value,
+    shipping_outside_dhaka: document.getElementById('shipping_outside_dhaka').value,
+    free_shipping_above: document.getElementById('free_shipping_above').value,
+    min_order_amount: document.getElementById('min_order_amount').value,
+    delivery_time_inside_dhaka: document.getElementById('delivery_time_inside_dhaka').value,
+    delivery_time_outside_dhaka: document.getElementById('delivery_time_outside_dhaka').value,
+    announcement_enabled: document.getElementById('announcement_enabled').value,
+    announcement_text: document.getElementById('announcement_text').value,
+    announcement_text_en: document.getElementById('announcement_text_en').value,
+    facebook_url: document.getElementById('facebook_url').value,
+    instagram_url: document.getElementById('instagram_url').value,
+    whatsapp: document.getElementById('whatsapp').value,
+    youtube_url: document.getElementById('youtube_url').value,
+    tiktok_url: document.getElementById('tiktok_url').value,
+    twitter_url: document.getElementById('twitter_url').value,
+    telegram_url: document.getElementById('telegram_url').value,
+    linkedin_url: document.getElementById('linkedin_url').value,
+    support_hours: document.getElementById('support_hours').value,
+    support_hours_en: document.getElementById('support_hours_en').value,
+    return_policy_days: document.getElementById('return_policy_days').value,
+    return_policy_text: document.getElementById('return_policy_text').value,
+    return_policy_text_en: document.getElementById('return_policy_text_en').value,
+    footer_copyright: document.getElementById('footer_copyright').value,
+    footer_copyright_en: document.getElementById('footer_copyright_en').value,
+    google_analytics_id: document.getElementById('google_analytics_id').value,
+    facebook_pixel_id: document.getElementById('facebook_pixel_id').value
+  };
+
+  const data = await fetch('/admin/api/settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(fields)
+  }).then(r => r.json());
+
+  showToast(data.message || 'Saved', data.success ? 'success' : 'error');
+}
+
+async function saveBkashSettings() {
+  const fields = {
+    bkash_enabled: document.getElementById('bkash_enabled').value,
+    cod_enabled: document.getElementById('cod_enabled').value,
+    bkash_mode: document.getElementById('bkash_mode').value,
+    bkash_env: document.getElementById('bkash_env').value,
+    bkash_app_key: document.getElementById('bkash_app_key').value.trim(),
+    bkash_app_secret: document.getElementById('bkash_app_secret').value.trim(),
+    bkash_username: document.getElementById('bkash_username').value.trim(),
+    bkash_password: document.getElementById('bkash_password').value.trim()
+  };
+
+  const data = await fetch('/admin/api/settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(fields)
+  }).then(r => r.json());
+
+  showToast(data.message || 'Saved', data.success ? 'success' : 'error');
+}
+
+async function testBkashConnection() {
+  const btn = document.getElementById('testBkashBtn');
+  btn.disabled = true;
+  await saveBkashSettings();
+  const res = await fetch('/bkash/test-connection', { method: 'POST' }).then(r => r.json());
+  btn.disabled = false;
+  showToast(res.message, res.success ? 'success' : 'error');
+}
+
+async function changePassword() {
+  const current_password = document.getElementById('currentPass').value;
+  const new_password = document.getElementById('newPass').value;
+  if (!current_password || !new_password) {
+    showToast('সব ক্ষেত্র পূরণ করুন', 'error');
+    return;
+  }
+
+  const data = await fetch('/admin/api/change-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ current_password, new_password })
+  }).then(r => r.json());
+
+  showToast(data.message, data.success ? 'success' : 'error');
+  if (data.success) {
+    document.getElementById('currentPass').value = '';
+    document.getElementById('newPass').value = '';
+  }
+}
+
+function handleFirebaseFile(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const raw = String(reader.result || '').trim();
+    try {
+      const parsed = JSON.parse(raw);
+      if (!parsed.project_id || !parsed.private_key || !parsed.client_email) {
+        showToast(getLang() === 'en' ? 'Invalid Firebase Service Account JSON file' : 'সঠিক Firebase Service Account JSON ফাইল নয়', 'error');
+        return;
+      }
+      document.getElementById('firebase_service_account_json').value = raw;
+      showToast(getLang() === 'en' ? `Loaded key for project: ${parsed.project_id}` : `প্রজেক্ট লোড হয়েছে: ${parsed.project_id}`, 'success');
+    } catch {
+      showToast(getLang() === 'en' ? 'Could not parse JSON file' : 'JSON ফাইল পড়া যায়নি', 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function loadIntegrationsStatus() {
+  try {
+    const data = await fetch('/admin/api/integrations/status').then(r => r.json());
+    if (!data.success) return;
+    integrationStatus = data;
+    if (data.email) {
+      if (data.email.smtpEmail && !document.getElementById('smtp_email').value) {
+        document.getElementById('smtp_email').value = data.email.smtpEmail;
+      }
+      if (data.email.fromName && !document.getElementById('smtp_from_name').value) {
+        document.getElementById('smtp_from_name').value = data.email.fromName;
+      }
+    }
+    renderIntegrationBadges();
+    renderFirebaseTotals();
+  } catch {}
+}
+
+function renderIntegrationBadges() {
+  const en = getLang() === 'en';
+  const fb = integrationStatus.firebase || {};
+  const fbBadge = document.getElementById('firebaseStatusBadge');
+  const clearBtn = document.getElementById('clearFirebaseBtn');
+  const fbTextarea = document.getElementById('firebase_service_account_json');
+  if (fbBadge) {
+    if (fb.configured) {
+      fbBadge.className = 'status-badge badge-active';
+      fbBadge.textContent = en ? `Connected (${fb.projectId})` : `যুক্ত (${fb.projectId})`;
+      if (clearBtn) clearBtn.style.display = 'inline-flex';
+      if (fbTextarea) fbTextarea.placeholder = en ? `Configured for ${fb.projectId}. Paste new JSON only to replace.` : `${fb.projectId} যুক্ত আছে। বদলাতে চাইলে নতুন JSON দিন।`;
+    } else {
+      fbBadge.className = 'status-badge badge-inactive';
+      fbBadge.textContent = en ? 'Not Connected' : 'সংযুক্ত নয়';
+      if (clearBtn) clearBtn.style.display = 'none';
+      if (fbTextarea) fbTextarea.placeholder = '{"type":"service_account","project_id":"...","private_key":"...","client_email":"..."}';
+    }
+  }
+
+  const em = integrationStatus.email || {};
+  const emBadge = document.getElementById('emailStatusBadge');
+  const passInput = document.getElementById('smtp_app_password');
+  if (emBadge) {
+    if (em.configured) {
+      emBadge.className = 'status-badge badge-active';
+      emBadge.textContent = en ? `SMTP Live (${em.smtpEmail})` : `Gmail চালু (${em.smtpEmail})`;
+      if (passInput) passInput.placeholder = en ? 'Saved (leave blank to keep existing)' : 'সংরক্ষিত (বদলাতে না চাইলে ফাঁকা রাখুন)';
+    } else {
+      emBadge.className = 'status-badge badge-pending';
+      emBadge.textContent = en ? 'Sandbox OTP Mode' : 'স্যান্ডবক্স ওটিপি মোড';
+      if (passInput) passInput.placeholder = 'xxxx xxxx xxxx xxxx';
+    }
+  }
+}
+
+function renderFirebaseTotals() {
+  const box = document.getElementById('firebaseTotalsBox');
+  if (!box) return;
+  const totals = integrationStatus.firebaseTotals;
+  if (!totals) {
+    box.style.display = 'none';
+    return;
+  }
+  const en = getLang() === 'en';
+  box.style.display = 'block';
+  box.innerHTML = `
+    <div style="font-weight:700; color:var(--dark); margin-bottom:6px;">
+      ${en ? 'Firestore analytics/totals Snapshot' : 'Firestore analytics/totals সারসংক্ষেপ'}
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px 12px; color:var(--text);">
+      <div>${en ? 'Total Orders' : 'মোট অর্ডার'}: <strong>${totals.totalOrders ?? 0}</strong></div>
+      <div>${en ? 'Total Revenue' : 'মোট আয়'}: <strong>৳${Number(totals.totalRevenue || 0).toLocaleString()}</strong></div>
+      <div>${en ? 'Verified Users' : 'ভেরিফায়েড ইউজার'}: <strong>${totals.verifiedUsers ?? 0} / ${totals.totalUsers ?? 0}</strong></div>
+      <div>${en ? 'Active Products' : 'সক্রিয় পণ্য'}: <strong>${totals.totalProducts ?? 0}</strong></div>
+    </div>
+    <div style="margin-top:6px; font-size:11px; color:var(--text-light);">
+      ${en ? 'Last Synced' : 'সর্বশেষ সিঙ্ক'}: ${escapeHtml(totals.updatedAt || '—')}
+    </div>
+  `;
+}
+
+async function saveFirebaseSettings() {
+  const en = getLang() === 'en';
+  const raw = document.getElementById('firebase_service_account_json').value.trim();
+  if (!raw) {
+    showToast(en ? 'Please upload or paste your Service Account JSON' : 'অনুগ্রহ করে Service Account JSON আপলোড বা পেস্ট করুন', 'error');
+    return false;
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    showToast(en ? 'Invalid JSON format' : 'JSON ফরম্যাট সঠিক নয়', 'error');
+    return false;
+  }
+  if (!parsed.project_id || !parsed.client_email || !parsed.private_key) {
+    showToast(en ? 'JSON must contain project_id, client_email, and private_key' : 'JSON-এ project_id, client_email ও private_key থাকতে হবে', 'error');
+    return false;
+  }
+
+  const res = await fetch('/admin/api/settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ firebase_service_account_json: raw })
+  }).then(r => r.json());
+
+  showToast(res.message || (en ? 'Firebase settings saved' : 'Firebase সেটিংস সেভ হয়েছে'), res.success ? 'success' : 'error');
+  if (res.success) {
+    document.getElementById('firebase_service_account_json').value = '';
+    document.getElementById('firebaseJsonFile').value = '';
+    await loadIntegrationsStatus();
+  }
+  return res.success;
+}
+
+async function clearFirebaseSettings() {
+  const en = getLang() === 'en';
+  if (!confirm(en ? 'Disconnect Firebase Firestore from this store?' : 'ফায়ারবেস ডিসকানেক্ট করতে চান?')) return;
+  const res = await fetch('/admin/api/settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ firebase_service_account_json: '' })
+  }).then(r => r.json());
+  showToast(res.success ? (en ? 'Firebase disconnected' : 'Firebase ডিসকানেক্ট হয়েছে') : (res.message || 'Error'), res.success ? 'success' : 'error');
+  await loadIntegrationsStatus();
+}
+
+async function testFirebase() {
+  const btn = document.getElementById('testFirebaseBtn');
+  btn.disabled = true;
+  if (document.getElementById('firebase_service_account_json').value.trim()) {
+    const saved = await saveFirebaseSettings();
+    if (!saved) { btn.disabled = false; return; }
+  }
+  const res = await fetch('/admin/api/firebase/test', { method: 'POST' }).then(r => r.json());
+  btn.disabled = false;
+  showToast(res.message || (res.success ? 'Connected' : 'Connection failed'), res.success ? 'success' : 'error');
+  await loadIntegrationsStatus();
+}
+
+async function syncAllToFirebase() {
+  const btn = document.getElementById('syncFirebaseBtn');
+  btn.disabled = true;
+  if (document.getElementById('firebase_service_account_json').value.trim()) {
+    const saved = await saveFirebaseSettings();
+    if (!saved) { btn.disabled = false; return; }
+  }
+  const res = await fetch('/admin/api/firebase/sync-all', { method: 'POST' }).then(r => r.json());
+  btn.disabled = false;
+  showToast(res.message || (res.success ? 'Sync complete' : 'Sync failed'), res.success ? 'success' : 'error');
+  if (res.success && res.totals) {
+    integrationStatus.firebaseTotals = res.totals;
+    renderFirebaseTotals();
+  }
+  await loadIntegrationsStatus();
+}
+
+async function saveEmailSettings() {
+  const smtpEmail = document.getElementById('smtp_email').value.trim();
+  const rawPass = document.getElementById('smtp_app_password').value.trim();
+  const fromName = document.getElementById('smtp_from_name').value.trim() || 'Lungi Ghar';
+
+  const payload = {
+    smtp_email: smtpEmail,
+    smtp_from_name: fromName,
+    smtp_app_password: rawPass ? rawPass : (integrationStatus.email && integrationStatus.email.configured ? '__KEEP__' : '')
+  };
+
+  const res = await fetch('/admin/api/settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(r => r.json());
+
+  showToast(res.message || 'Saved', res.success ? 'success' : 'error');
+  if (res.success) {
+    document.getElementById('smtp_app_password').value = '';
+    await loadIntegrationsStatus();
+  }
+  return res.success;
+}
+
+async function testEmailSettings() {
+  const btn = document.getElementById('testEmailBtn');
+  btn.disabled = true;
+  await saveEmailSettings();
+  const to_email = document.getElementById('test_email_to').value.trim() || document.getElementById('smtp_email').value.trim();
+  const res = await fetch('/admin/api/email/test', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ to_email })
+  }).then(r => r.json());
+  btn.disabled = false;
+  showToast(res.message || (res.success ? 'Test email sent' : 'Failed'), res.success ? 'success' : 'error');
+}
+
+window.onLanguageChange = syncLabels;
+syncLabels();
+checkSession().then(a => { if (a) loadSettings(); });
+</script>
+</body>
+</html>

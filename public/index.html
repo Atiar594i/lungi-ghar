@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lungi Ghar - Heritage Bangladeshi Handloom Lungis</title>
+  <meta name="description" content="বাংলাদেশের সেরা হ্যান্ডলুম সুতি, সিল্ক ও চেক লুঙ্গি কালেকশন। বিকাশ ও ক্যাশ অন ডেলিভারি।">
+  <link id="siteFavicon" rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/firebase-analytics.js"></script>
+</head>
+<body>
+
+<!-- Store Announcement Bar -->
+<div id="storeAnnouncementBar" style="display:none; background:var(--primary); color:#ffffff; font-size:12.5px; font-weight:600; text-align:center; padding:7px 12px; letter-spacing:0.3px;">
+  <span id="announcementText"></span>
+</div>
+
+<!-- Top Utility Bar -->
+<div class="top-bar">
+  <div class="container">
+    <div style="display:flex; gap:18px; align-items:center; flex-wrap:wrap;">
+      <span class="top-bar-item"><span id="iconPhoneTop"></span> <span data-i18n="hotline">হটলাইন</span>: <strong id="topPhone">01700000000</strong></span>
+      <span class="top-bar-item" id="freeShipBanner"></span>
+    </div>
+    <div class="top-bar-right">
+      <span class="top-bar-item" id="topSupportHours" data-i18n="hours">সোম–শনি: সকাল ৯টা – রাত ৯টা</span>
+      <div data-lang-switcher></div>
+    </div>
+  </div>
+</div>
+
+<!-- Header -->
+<header class="header">
+  <div class="container">
+    <div class="header-inner">
+      <a href="/" class="logo">
+        <div class="logo-mark" id="brandLogoMark"></div>
+        <div class="logo-text">
+          <span id="shopName">লুঙ্গি ঘর</span>
+          <span data-i18n="brand_sub">বাংলাদেশ হ্যান্ডলুম কালেকশন</span>
+        </div>
+      </a>
+
+      <div class="search-bar">
+        <input type="text" id="searchInput" data-i18n-placeholder="search_placeholder" placeholder="সুতি, সিল্ক বা চেক লুঙ্গি খুঁজুন...">
+        <button type="button" onclick="searchProducts()" id="searchBtn" aria-label="Search"></button>
+      </div>
+
+      <div class="header-actions">
+        <div id="authHeaderSlot"></div>
+        <a href="/track-order" class="action-btn">
+          <span class="icon" id="iconTrackHeader"></span>
+          <span class="label" data-i18n="track">ট্র্যাক</span>
+        </a>
+        <button type="button" class="action-btn" onclick="openCart()">
+          <span class="icon" id="iconCartHeader"></span>
+          <span class="label" data-i18n="cart">কার্ট</span>
+          <span class="badge" id="cartBadge" style="display:none">0</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Navigation -->
+<nav class="nav">
+  <div class="container">
+    <div class="nav-inner" id="mainNav">
+      <a href="/" class="nav-link active" data-i18n="nav_home">হোম</a>
+      <a href="/?featured=1" class="nav-link" data-i18n="nav_bestseller">বেস্টসেলার</a>
+      <a href="/track-order" class="nav-link" data-i18n="nav_track">অর্ডার ট্র্যাক</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero" id="heroSection">
+  <div class="container">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-badge"><span id="iconHeroSpark"></span> <span data-i18n="hero_badge">পাবনা ও সিরাজগঞ্জের খাঁটি তাঁতের বুনন</span></div>
+        <h1>
+          <span data-i18n="hero_title_1" style="color:white;display:block;">ঐতিহ্য ও আভিজাত্যের</span>
+          <span data-i18n="hero_title_2">সেরা লুঙ্গি কালেকশন</span>
+        </h1>
+        <p data-i18n="hero_desc">খাঁটি ১০০% সুতি থেকে শুরু করে রাজকীয় জরি পাড়ের সিল্ক — প্রজন্মের কারিগরি দক্ষতায় বোনা প্রতিটি লুঙ্গি। বিকাশ অটোমেটিক পেমেন্ট ও ক্যাশ অন ডেলিভারি সুবিধা।</p>
+        <div class="hero-buttons">
+          <button type="button" class="hero-btn-primary" onclick="scrollToProducts()">
+            <span data-i18n="hero_cta_shop">কালেকশন দেখুন</span>
+            <span id="iconHeroArrow"></span>
+          </button>
+          <button type="button" class="hero-btn-secondary" onclick="window.location.href='/?featured=1'" data-i18n="hero_cta_best">বেস্টসেলার দেখুন</button>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="num" id="statCustomers">৫০০০+</div>
+            <div class="lab" data-i18n="stat_customers">সন্তুষ্ট গ্রাহক</div>
+          </div>
+          <div class="hero-stat">
+            <div class="num" id="statCotton">১০০%</div>
+            <div class="lab" data-i18n="stat_cotton">খাঁটি সুতি ও সিল্ক</div>
+          </div>
+          <div class="hero-stat">
+            <div class="num" id="statDistricts">৬৪</div>
+            <div class="lab" data-i18n="stat_districts">জেলায় ডেলিভারি</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-media">
+        <img src="/uploads/hero-lungi.jpg" alt="Bangladeshi Handloom Lungis">
+        <div class="hero-caption">
+          <div>
+            <div style="font-weight:700;" id="heroCaptionTitle">Heritage Handloom Series</div>
+            <div style="font-size:11.5px; color:rgba(255,255,255,0.72);" id="heroCaptionSub">80-Count Combed Cotton &amp; Silk Borders</div>
+          </div>
+          <span style="background:rgba(229,188,115,0.2); color:#f3d7a4; padding:5px 10px; border-radius:6px; font-weight:700;" id="heroCaptionPrice">৳290+</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Trust Features Strip -->
+<section class="features-section" id="featuresSection">
+  <div class="container">
+    <div class="features-grid">
+      <div class="feature-item">
+        <div class="feature-icon" id="featIcon1"></div>
+        <div>
+          <div class="feature-title" data-i18n="feat_delivery_t">সারা দেশে দ্রুত ডেলিভারি</div>
+          <div class="feature-desc" data-i18n="feat_delivery_d">ঢাকায় ১–২ দিন, ঢাকার বাইরে ৩–৫ কার্যদিবসে পৌঁছে যাবে</div>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon" id="featIcon2"></div>
+        <div>
+          <div class="feature-title" data-i18n="feat_authentic_t">১০০% অরিজিনাল হ্যান্ডলুম</div>
+          <div class="feature-desc" data-i18n="feat_authentic_d">সরাসরি পাবনা ও সিরাজগঞ্জের তাঁতিদের থেকে সংগৃহীত</div>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon" id="featIcon3"></div>
+        <div>
+          <div class="feature-title" data-i18n="feat_payment_t">বিকাশ ও ক্যাশ অন ডেলিভারি</div>
+          <div class="feature-desc" data-i18n="feat_payment_d">স্বয়ংক্রিয় বিকাশ পেমেন্ট অথবা পণ্য হাতে পেয়ে পরিশোধ</div>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon" id="featIcon4"></div>
+        <div>
+          <div class="feature-title" data-i18n="feat_return_t">৭ দিনের সহজ রিটার্ন</div>
+          <div class="feature-desc" data-i18n="feat_return_d">অব্যবহৃত পণ্য ৭ দিনের মধ্যে পরিবর্তন বা ফেরতের নিশ্চয়তা</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Categories -->
+<section class="section" id="categoriesSection">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title" data-i18n="sec_categories">কালেকশন ক্যাটাগরি</h2>
+    </div>
+    <div class="categories-grid" id="categoriesGrid">
+      <div class="spinner" style="grid-column:1/-1;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Bestsellers -->
+<section class="section section-white" id="featuredProducts">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title" data-i18n="sec_bestsellers">বেস্টসেলার কালেকশন</h2>
+      <a href="/?featured=1" style="color: var(--primary); font-weight: 600; font-size:14px; display:inline-flex; align-items:center; gap:6px;">
+        <span data-i18n="view_all">সব দেখুন</span> <span id="iconViewAll"></span>
+      </a>
+    </div>
+    <div class="products-grid" id="featuredGrid">
+      <div class="spinner" style="grid-column:1/-1;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- All Products -->
+<section class="section" id="allProducts">
+  <div class="container">
+    <div class="section-header">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <h2 class="section-title" id="productsTitle" data-i18n="sec_all_products">সব লুঙ্গি কালেকশন</h2>
+        <a href="/" id="clearFilterBtn" class="btn btn-outline btn-sm" style="display:none;" data-i18n="clear_filter">ফিল্টার মুছুন</a>
+      </div>
+      <div>
+        <select id="sortSelect" onchange="loadProducts(1)" class="form-control" style="width:auto; min-width:190px; padding:9px 14px;">
+          <option value="" data-i18n="sort_default">সাজান: ডিফল্ট</option>
+          <option value="bestseller" data-i18n="sort_bestseller">সর্বাধিক বিক্রিত</option>
+          <option value="price_asc" data-i18n="sort_price_asc">দাম: কম থেকে বেশি</option>
+          <option value="price_desc" data-i18n="sort_price_desc">দাম: বেশি থেকে কম</option>
+          <option value="newest" data-i18n="sort_newest">নতুন আগমন</option>
+        </select>
+      </div>
+    </div>
+    <div class="products-grid" id="productsGrid">
+      <div class="spinner" style="grid-column:1/-1;"></div>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</section>
+
+<!-- Newsletter -->
+<section class="newsletter">
+  <div class="container" style="text-align:center;">
+    <h2 data-i18n="newsletter_title">বিশেষ অফার ও নতুন কালেকশনের আপডেট পান</h2>
+    <p data-i18n="newsletter_desc">ঈদ ও মৌসুমী ছাড়ের খবর সবার আগে পেতে আপনার মোবাইল নম্বর যুক্ত করুন</p>
+    <div class="newsletter-form">
+      <input type="tel" id="subPhone" data-i18n-placeholder="newsletter_placeholder" placeholder="আপনার মোবাইল নম্বর (01XXXXXXXXX)">
+      <button type="button" id="subBtn" onclick="subscribeOffer()" data-i18n="newsletter_btn">সাবস্ক্রাইব করুন</button>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo">
+          <div class="logo-mark" style="width:34px;height:34px;" id="footerLogoMark"></div>
+          <span id="footerShopName">লুঙ্গি ঘর</span>
+        </div>
+        <p class="footer-desc" data-i18n="footer_desc">বাংলাদেশের ঐতিহ্যবাহী তাঁতশিল্পের গর্বিত ধারক। পাবনা, সিরাজগঞ্জ ও বাবুরহাটের শ্রেষ্ঠ সুতি ও সিল্ক লুঙ্গি সরাসরি আপনার দোরগোড়ায়।</p>
+        <div class="footer-social" id="footerSocialBox"></div>
+      </div>
+      <div>
+        <div class="footer-heading" data-i18n="footer_quick">দ্রুত লিঙ্ক</div>
+        <ul class="footer-links">
+          <li><a href="/" data-i18n="nav_home">হোম</a></li>
+          <li><a href="/?featured=1" data-i18n="nav_bestseller">বেস্টসেলার</a></li>
+          <li><a href="/#catalogSection" data-i18n="sec_categories">কালেকশন ক্যাটাগরি</a></li>
+          <li><a href="/track-order" data-i18n="nav_track">অর্ডার ট্র্যাক</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-heading" data-i18n="footer_customer">গ্রাহক সেবা</div>
+        <ul class="footer-links">
+          <li><a href="/account" data-i18n="account">অ্যাকাউন্ট</a></li>
+          <li><a href="/track-order" data-i18n="my_orders">আমার অর্ডার</a></li>
+          <li><a href="/#featuresSection" data-i18n="feat_return_t">৭ দিনের সহজ রিটার্ন</a></li>
+          <li><a href="/#featuresSection" data-i18n="feat_delivery_t">সারা দেশে দ্রুত ডেলিভারি</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-heading" data-i18n="footer_contact">যোগাযোগ</div>
+        <div class="footer-contact">
+          <p><span id="iconFootPhone"></span> <span id="footerPhone">01700000000</span></p>
+          <p><span id="iconFootMail"></span> <span id="footerEmail">info@lungigor.com</span></p>
+          <p><span id="iconFootPin"></span> <span id="footerAddrWrap"><span id="footerAddr">ঢাকা, বাংলাদেশ</span></span></p>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 <span id="footerShopName2">লুঙ্গি ঘর</span> · <span id="footerCopyrightText" data-i18n="footer_rights">সমস্ত অধিকার সংরক্ষিত</span></p>
+      <p id="footerPaymentsText" data-i18n="footer_payments">নিরাপদ পেমেন্ট: বিকাশ অটোমেটিক ও ক্যাশ অন ডেলিভারি</p>
+    </div>
+  </div>
+</footer>
+
+<!-- Floating WhatsApp -->
+<a href="#" id="whatsappFloat" target="_blank" class="whatsapp-float" style="display:none;">
+  <span id="iconWaFloat"></span>
+  <span data-i18n="whatsapp_chat">হোয়াটসঅ্যাপ সহায়তা</span>
+</a>
+
+<!-- Cart Sidebar -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h3><span id="iconCartTitle"></span> <span data-i18n="cart_title">শপিং কার্ট</span></h3>
+    <button type="button" class="cart-close" onclick="closeCart()" id="iconCartClose"></button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer" id="cartFooter" style="display:none">
+    <div class="cart-summary">
+      <div class="cart-row">
+        <span data-i18n="subtotal">সাবটোটাল</span>
+        <span id="cartSubtotal">৳০</span>
+      </div>
+      <div class="cart-row">
+        <span data-i18n="shipping_charge">ডেলিভারি চার্জ</span>
+        <span data-i18n="shipping_tbd">চেকআউটে নির্ধারিত হবে</span>
+      </div>
+      <div class="cart-row total">
+        <span data-i18n="total">সর্বমোট</span>
+        <span id="cartTotal">৳০</span>
+      </div>
+    </div>
+    <button type="button" class="btn btn-primary btn-full btn-lg" onclick="goToCheckout()">
+      <span data-i18n="checkout_btn">চেকআউট করুন</span>
+      <span id="iconCheckoutArrow"></span>
+    </button>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="/js/icons.js"></script>
+<script src="/js/i18n.js"></script>
+<script src="/js/cart.js"></script>
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const activeCat = urlParams.get('category') || '';
+  const activeFeatured = urlParams.get('featured') || '';
+  const activeSearch = urlParams.get('search') || '';
+  const hasFilter = Boolean(activeCat || activeFeatured || activeSearch);
+
+  let cachedSettings = {};
+  let cachedCategories = [];
+  let cachedFeatured = [];
+  let cachedProductsData = null;
+
+  function mountStaticIcons() {
+    document.getElementById('brandLogoMark').innerHTML = svgIcon('layers', 20);
+    document.getElementById('footerLogoMark').innerHTML = svgIcon('layers', 18);
+    document.getElementById('iconPhoneTop').innerHTML = svgIcon('phone', 13);
+    document.getElementById('searchBtn').innerHTML = svgIcon('search', 17);
+    document.getElementById('iconTrackHeader').innerHTML = svgIcon('package', 18);
+    document.getElementById('iconCartHeader').innerHTML = svgIcon('cart', 18);
+    document.getElementById('iconHeroSpark').innerHTML = svgIcon('sparkles', 14);
+    document.getElementById('iconHeroArrow').innerHTML = svgIcon('arrowRight', 16);
+    document.getElementById('featIcon1').innerHTML = svgIcon('truck', 20);
+    document.getElementById('featIcon2').innerHTML = svgIcon('shield', 20);
+    document.getElementById('featIcon3').innerHTML = svgIcon('creditCard', 20);
+    document.getElementById('featIcon4').innerHTML = svgIcon('refresh', 20);
+    document.getElementById('iconViewAll').innerHTML = svgIcon('arrowRight', 15);
+    document.getElementById('iconFootPhone').innerHTML = svgIcon('phone', 14);
+    document.getElementById('iconFootMail').innerHTML = svgIcon('mail', 14);
+    document.getElementById('iconFootPin').innerHTML = svgIcon('mapPin', 14);
+    document.getElementById('iconWaFloat').innerHTML = svgIcon('messageCircle', 16);
+    document.getElementById('iconCartTitle').innerHTML = svgIcon('cart', 19);
+    document.getElementById('iconCartClose').innerHTML = svgIcon('x', 16);
+    document.getElementById('iconCheckoutArrow').innerHTML = svgIcon('arrowRight', 16);
+  }
+
+  function applySettingsToDom() {
+    const s = cachedSettings;
+    const isEn = getLang() === 'en';
+    const name = isEn ? (s.shop_name_en || s.shop_name || 'Lungi Ghar') : (s.shop_name || 'লুঙ্গি ঘর');
+    const addr = isEn ? (s.shop_address_en || s.shop_address || 'Dhaka, Bangladesh') : (s.shop_address || 'ঢাকা, বাংলাদেশ');
+
+    document.getElementById('shopName').textContent = name;
+    document.getElementById('footerShopName').textContent = name;
+    document.getElementById('footerShopName2').textContent = name;
+    document.getElementById('topPhone').textContent = s.shop_phone || '01700000000';
+    document.getElementById('footerPhone').textContent = s.shop_phone || '01700000000';
+    document.getElementById('footerEmail').textContent = s.shop_email || '';
+
+    const addrWrap = document.getElementById('footerAddrWrap');
+    if (addrWrap) {
+      if (s.shop_google_map_url) {
+        addrWrap.innerHTML = `<a href="${escapeHtml(s.shop_google_map_url)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">${escapeHtml(addr)}</a>`;
+      } else {
+        addrWrap.innerHTML = `<span id="footerAddr">${escapeHtml(addr)}</span>`;
+      }
+    } else {
+      const fa = document.getElementById('footerAddr');
+      if (fa) fa.textContent = addr;
+    }
+
+    if (s.site_favicon) {
+      const favEl = document.getElementById('siteFavicon');
+      if (favEl) favEl.href = s.site_favicon;
+    }
+
+    if (s.site_logo) {
+      const brandLogo = document.getElementById('brandLogoMark');
+      if (brandLogo) {
+        brandLogo.innerHTML = `<img src="${escapeHtml(s.site_logo)}" alt="${escapeHtml(name)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">`;
+      }
+      const footerLogo = document.getElementById('footerLogoMark');
+      if (footerLogo) {
+        footerLogo.innerHTML = `<img src="${escapeHtml(s.site_logo)}" alt="${escapeHtml(name)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">`;
+      }
+    }
+
+    if (s.support_hours || s.support_hours_en) {
+      const hoursEl = document.getElementById('topSupportHours');
+      if (hoursEl) hoursEl.textContent = isEn ? (s.support_hours_en || t('hours')) : (s.support_hours || t('hours'));
+    }
+
+    if (s.footer_copyright || s.footer_copyright_en) {
+      const copyEl = document.getElementById('footerCopyrightText');
+      if (copyEl) copyEl.textContent = isEn ? (s.footer_copyright_en || t('footer_rights')) : (s.footer_copyright || t('footer_rights'));
+    }
+
+    const payTextEl = document.getElementById('footerPaymentsText');
+    if (payTextEl) {
+      if (s.bkash_enabled === '0') {
+        payTextEl.textContent = isEn ? 'Secure payment: Cash on Delivery' : 'নিরাপদ পেমেন্ট: ক্যাশ অন ডেলিভারি';
+      } else if (s.cod_enabled === '0') {
+        payTextEl.textContent = isEn ? 'Secure payment: bKash Automated' : 'নিরাপদ পেমেন্ট: বিকাশ অটোমেটিক';
+      } else {
+        payTextEl.textContent = isEn ? 'Secure payment: bKash Automated & Cash on Delivery' : 'নিরাপদ পেমেন্ট: বিকাশ অটোমেটিক ও ক্যাশ অন ডেলিভারি';
+      }
+    }
+
+    document.title = isEn ? `${name} — Heritage Bangladeshi Handloom Lungis` : `${name} — বাংলাদেশের সেরা হ্যান্ডলুম লুঙ্গি`;
+
+    const freeAbove = parseFloat(s.free_shipping_above || 1500);
+    const bannerEl = document.getElementById('freeShipBanner');
+    if (freeAbove > 0) {
+      bannerEl.innerHTML = `${svgIcon('truck', 13)} <span>${t('free_ship_promo', { amount: isEn ? freeAbove.toLocaleString('en-US') : freeAbove.toLocaleString('bn-BD') })}</span>`;
+    }
+
+    const announceBar = document.getElementById('storeAnnouncementBar');
+    if (announceBar) {
+      if (s.announcement_enabled === '1' || s.announcement_enabled === undefined) {
+        const msg = isEn && s.announcement_text_en ? s.announcement_text_en : (s.announcement_text || '');
+        if (msg) {
+          announceBar.style.display = 'block';
+          document.getElementById('announcementText').textContent = msg;
+        } else {
+          announceBar.style.display = 'none';
+        }
+      } else {
+        announceBar.style.display = 'none';
+      }
+    }
+
+    document.getElementById('statCustomers').textContent = isEn ? '5,000+' : '৫০০০+';
+    document.getElementById('statCotton').textContent = isEn ? '100%' : '১০০%';
+    document.getElementById('statDistricts').textContent = isEn ? '64' : '৬৪';
+    document.getElementById('heroCaptionTitle').textContent = isEn ? 'Signature Handloom Series' : 'ঐতিহ্যবাহী তাঁত সিরিজ';
+    document.getElementById('heroCaptionSub').textContent = isEn ? '80-Count Pure Cotton & Zari Silk' : '৮০ কাউন্ট খাঁটি সুতি ও জরি সিল্ক';
+    document.getElementById('heroCaptionPrice').textContent = `${formatPrice(290)}+`;
+
+    const socialBox = document.getElementById('footerSocialBox');
+    if (socialBox) {
+      const socialItems = [
+        { key: 'facebook_url', icon: 'facebook', label: 'Facebook' },
+        { key: 'instagram_url', icon: 'instagram', label: 'Instagram' },
+        { key: 'whatsapp', icon: 'whatsapp', label: 'WhatsApp', isWa: true },
+        { key: 'youtube_url', icon: 'youtube', label: 'YouTube' },
+        { key: 'tiktok_url', icon: 'tiktok', label: 'TikTok' },
+        { key: 'twitter_url', icon: 'twitter', label: 'X (Twitter)' },
+        { key: 'telegram_url', icon: 'telegram', label: 'Telegram' },
+        { key: 'linkedin_url', icon: 'linkedin', label: 'LinkedIn' }
+      ];
+
+      const html = [];
+      for (const item of socialItems) {
+        let val = s[item.key];
+        if (!val) continue;
+        let href = val;
+        if (item.isWa) {
+          let waNum = val.replace(/[^\d]/g, '');
+          if (waNum.startsWith('01')) waNum = '88' + waNum;
+          href = `https://wa.me/${waNum}`;
+          const floatBtn = document.getElementById('whatsappFloat');
+          if (floatBtn) {
+            floatBtn.href = href;
+            floatBtn.style.display = 'inline-flex';
+          }
+        }
+        html.push(`<a href="${escapeHtml(href)}" target="_blank" rel="noopener" class="social-btn">${svgIcon(item.icon, 15)} <span>${item.label}</span></a>`);
+      }
+      socialBox.innerHTML = html.join('');
+    }
+  }
+
+  async function loadSettings() {
+    const data = await fetch('/api/settings').then(r => r.json());
+    if (data.success) {
+      cachedSettings = data.settings;
+      applySettingsToDom();
+    }
+  }
+
+  function renderCategories() {
+    const grid = document.getElementById('categoriesGrid');
+    const nav = document.getElementById('mainNav');
+    if (!cachedCategories.length) {
+      grid.innerHTML = `<p style="color:var(--text-light)">—</p>`;
+      return;
+    }
+
+    grid.innerHTML = cachedCategories.map(c => `
+      <div class="category-card" onclick="filterByCategory('${escapeHtml(c.slug)}')">
+        <div class="category-icon">${svgIcon('layers', 20)}</div>
+        <div>
+          <div class="category-name">${escapeHtml(localizeField(c, 'name'))}</div>
+          <div class="category-desc-mini">${escapeHtml(localizeField(c, 'description'))}</div>
+        </div>
+        <div class="category-count">${c.product_count} ${t('products_count')} ${svgIcon('arrowRight', 13)}</div>
+      </div>
+    `).join('');
+
+    const catLinks = cachedCategories.map(c =>
+      `<a href="/?category=${encodeURIComponent(c.slug)}" class="nav-link ${activeCat === c.slug ? 'active' : ''}">${escapeHtml(localizeField(c, 'name'))}</a>`
+    ).join('');
+
+    nav.innerHTML = `
+      <a href="/" class="nav-link ${!hasFilter ? 'active' : ''}">${t('nav_home')}</a>
+      ${catLinks}
+      <a href="/?featured=1" class="nav-link ${activeFeatured ? 'active' : ''}">${t('nav_bestseller')}</a>
+      <a href="/track-order" class="nav-link">${t('nav_track')}</a>
+    `;
+
+    updateProductsSectionTitle();
+  }
+
+  async function loadCategories() {
+    const data = await fetch('/api/categories').then(r => r.json());
+    if (data.success) {
+      cachedCategories = data.categories || [];
+      renderCategories();
+    }
+  }
+
+  function updateProductsSectionTitle() {
+    const titleEl = document.getElementById('productsTitle');
+    if (activeCat) {
+      const found = cachedCategories.find(c => c.slug === activeCat);
+      if (found) titleEl.textContent = localizeField(found, 'name');
+    } else if (activeFeatured) {
+      titleEl.textContent = t('sec_bestsellers');
+    } else if (activeSearch) {
+      titleEl.textContent = getLang() === 'en' ? `Results for "${activeSearch}"` : `"${activeSearch}" এর ফলাফল`;
+    } else {
+      titleEl.textContent = t('sec_all_products');
+    }
+  }
+
+  async function loadFeatured() {
+    if (hasFilter) {
+      document.getElementById('featuredProducts').style.display = 'none';
+      return;
+    }
+    const data = await fetch('/api/products?featured=1&limit=8').then(r => r.json());
+    if (data.success) {
+      cachedFeatured = data.products || [];
+      renderFeatured();
+    }
+  }
+
+  function renderFeatured() {
+    const grid = document.getElementById('featuredGrid');
+    if (cachedFeatured.length > 0) {
+      grid.innerHTML = cachedFeatured.map(p => renderProductCard(p)).join('');
+    } else {
+      grid.innerHTML = `<p style="color:var(--text-light)">—</p>`;
+    }
+  }
+
+  async function loadProducts(page = 1) {
+    const sort = document.getElementById('sortSelect')?.value || '';
+    if (activeSearch) document.getElementById('searchInput').value = activeSearch;
+
+    let url = `/api/products?page=${page}&limit=12`;
+    if (activeCat) url += `&category=${encodeURIComponent(activeCat)}`;
+    if (activeFeatured) url += `&featured=1`;
+    if (activeSearch) url += `&search=${encodeURIComponent(activeSearch)}`;
+    if (sort) url += `&sort=${encodeURIComponent(sort)}`;
+
+    const grid = document.getElementById('productsGrid');
+    grid.innerHTML = '<div class="spinner" style="grid-column:1/-1;"></div>';
+
+    const data = await fetch(url).then(r => r.json());
+    if (data.success) {
+      cachedProductsData = { ...data, currentPage: page };
+      renderProductsGrid();
+    }
+
+    if (hasFilter) {
+      document.getElementById('clearFilterBtn').style.display = 'inline-flex';
+      document.getElementById('heroSection').style.display = 'none';
+      document.getElementById('featuresSection').style.display = 'none';
+      document.getElementById('categoriesSection').style.display = 'none';
+    }
+    updateProductsSectionTitle();
+  }
+
+  function renderProductsGrid() {
+    if (!cachedProductsData) return;
+    const grid = document.getElementById('productsGrid');
+    const data = cachedProductsData;
+
+    if (data.products.length > 0) {
+      grid.innerHTML = data.products.map(p => renderProductCard(p)).join('');
+    } else {
+      const noFound = getLang() === 'en' ? 'No products found matching your query.' : 'কোনো পণ্য পাওয়া যায়নি।';
+      grid.innerHTML = `<div style="text-align:center; color:var(--text-light); padding:48px; grid-column:1/-1">${noFound}</div>`;
+    }
+
+    const paginationEl = document.getElementById('pagination');
+    paginationEl.innerHTML = '';
+    if (data.pages > 1) {
+      for (let i = 1; i <= data.pages; i++) {
+        const btn = document.createElement('button');
+        btn.className = `page-btn ${i === data.currentPage ? 'active' : ''}`;
+        btn.textContent = i;
+        btn.onclick = () => loadProducts(i);
+        paginationEl.appendChild(btn);
+      }
+    }
+  }
+
+  function renderProductCard(p) {
+    const img = p.images && p.images.length > 0 ? p.images[0] : '/img/no-image.svg';
+    const price = p.sale_price || p.price;
+    const hasDiscount = p.sale_price && p.sale_price < p.price;
+    const discount = hasDiscount ? Math.round((1 - p.sale_price / p.price) * 100) : 0;
+    const defaultColor = (p.colors && p.colors[0]) || '';
+    const defaultSize = (p.sizes && p.sizes[0]) || (getLang() === 'en' ? 'Free Size (5.5 Haat)' : 'ফ্রি সাইজ (৫.৫ হাত)');
+    const outOfStock = p.stock <= 0;
+    const wished = isWishlisted(p.id);
+    const reviewCount = p.review_count || 0;
+    const displayName = localizeField(p, 'name');
+    const displayCat = getLang() === 'en' ? (p.category_name_en || p.category_name || '') : (p.category_name || '');
+
+    return `
+      <div class="product-card" onclick="window.location.href='/product/${encodeURIComponent(p.slug)}'">
+        <div class="product-card-img">
+          <img src="${escapeHtml(img)}" alt="${escapeHtml(displayName)}" onerror="this.src='/img/no-image.svg'">
+          ${p.featured ? `<span class="product-badge featured">${t('badge_bestseller')}</span>` : ''}
+          ${hasDiscount ? `<span class="product-badge sale" style="top:${p.featured ? '40px' : '12px'}">${t('badge_discount', { pct: discount })}</span>` : ''}
+          <button type="button" class="wishlist-btn ${wished ? 'active' : ''}" onclick="event.stopPropagation(); toggleWishlist(${p.id}, this)" aria-label="Wishlist">
+            ${svgIcon(wished ? 'heartFilled' : 'heart', 16)}
+          </button>
+        </div>
+        <div class="product-card-body">
+          <div class="product-category">${escapeHtml(displayCat)}</div>
+          <div class="product-name">${escapeHtml(displayName)}</div>
+          <div class="product-rating">
+            ${svgIcon('starFilled', 13)} ${svgIcon('starFilled', 13)} ${svgIcon('starFilled', 13)} ${svgIcon('starFilled', 13)} ${svgIcon('starFilled', 13)}
+            <span style="color:var(--text-light); margin-left:4px;">(${reviewCount > 0 ? reviewCount + ' ' + t('reviews_label') : t('new_arrival')})</span>
+          </div>
+          <div class="product-price">
+            <span class="current">${formatPrice(price)}</span>
+            ${hasDiscount ? `<span class="original">${formatPrice(p.price)}</span>` : ''}
+            ${hasDiscount ? `<span class="discount">-${discount}%</span>` : ''}
+          </div>
+        </div>
+        <div class="product-card-footer">
+          <button type="button" class="add-to-cart-btn" ${outOfStock ? 'disabled' : ''} onclick="event.stopPropagation(); addToCart(${p.id}, ${JSON.stringify(p.name).replace(/"/g, '&quot;')}, ${price}, ${JSON.stringify(img).replace(/"/g, '&quot;')}, ${JSON.stringify(defaultColor).replace(/"/g, '&quot;')}, ${JSON.stringify(defaultSize).replace(/"/g, '&quot;')}, 1, true, ${JSON.stringify(p.name_en || p.name).replace(/"/g, '&quot;')})">
+            ${svgIcon(outOfStock ? 'x' : 'cart', 15)} ${outOfStock ? t('out_of_stock') : t('add_to_cart')}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function filterByCategory(slug) {
+    window.location.href = `/?category=${encodeURIComponent(slug)}`;
+  }
+
+  function searchProducts() {
+    const q = document.getElementById('searchInput').value.trim();
+    if (q) window.location.href = `/?search=${encodeURIComponent(q)}`;
+    else window.location.href = '/';
+  }
+
+  document.getElementById('searchInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') searchProducts();
+  });
+
+  function scrollToProducts() {
+    document.getElementById('allProducts').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  async function subscribeOffer() {
+    const input = document.getElementById('subPhone');
+    const btn = document.getElementById('subBtn');
+    const phone = input.value.trim();
+    if (!phone) {
+      showToast(getLang() === 'en' ? 'Enter your mobile number' : 'আপনার মোবাইল নম্বর লিখুন', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    const data = await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone })
+    }).then(r => r.json());
+
+    btn.disabled = false;
+    if (data.success) {
+      showToast(getLang() === 'en' ? 'Subscribed for seasonal offers' : data.message, 'success');
+      input.value = '';
+    } else {
+      showToast(data.message || 'Invalid phone number', 'error');
+    }
+  }
+
+  window.onLanguageChange = function () {
+    applySettingsToDom();
+    renderCategories();
+    renderFeatured();
+    renderProductsGrid();
+    renderCartItems();
+    renderAuthHeader();
+  };
+
+  mountStaticIcons();
+  initAuthHeader();
+  loadSettings();
+  loadCategories();
+  loadFeatured();
+  loadProducts(1);
+  updateCartUI();
+</script>
+</body>
+</html>
